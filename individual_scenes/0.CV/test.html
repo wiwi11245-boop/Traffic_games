@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediaPipe 交通手勢辨識 - 雙點靈敏揮手版</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .preview-box {
+            position: relative;
+            width: 640px;
+            height: 480px;
+            border: 4px solid #4c8537;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        .status-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #00ffcc;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 2px solid #00ffcc;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>MediaPipe Pose Landmarker 交通手勢辨識 (雙點靈敏揮手版)</h2>
+
+    <div class="preview-box">
+        <video id="webcam" autoplay playsinline></video>
+        <div id="status" class="status-badge">初始化模型中...</div>
+    </div>
+
+    <!-- 使用 ES Module 載入 MediaPipe Vision -->
+    <script type="module">
+        import { PoseLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+
+        const video = document.getElementById("webcam");
+        const statusDiv = document.getElementById("status");
+
+        let poseLandmarker = null;
+        let lastVideoTime = -1;
+
+        // 🛠️ 雙點歷史紀錄佇列 (手腕與手肘)
+        const wristYHistory = [];      // 手腕 Y 軸紀錄 (15 幀)
+        const elbowYHistory = [];      // 🛠️ 新增：手肘 Y 軸紀錄 (15 幀)
+        const overtakeVotePool = [];   // 晃動投票佇列 (30 幀)
+        
+        let activeFramesCount = 0;
+        let lastDetectedGesture = null;
+        let gestureStreakCount = 0;
+        let finalAction = null;
+
+        // 1. 初始化 PoseLandmarker 模型
+        async function initPoseLandmarker() {
+            try {
+                statusDiv.textContent = "載入模型資源中...";
+                const vision = await FilesetResolver.forVisionTasks(
+                    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
+                );
+
+                poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
+                    baseOptions: {
+                        modelAssetPath: `https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_full/float16/1/pose_landmarker_full.task`,
+                        delegate: "GPU"
+                    },
+                    runningMode: "VIDEO",
+                    numPoses: 1
+                });
+
+                statusDiv.textContent = "開啟視訊鏡頭中...";
+                enableCam();
+            } catch (error) {
+                console.error("初始化失敗：", error);
+                statusDiv.textContent = "初始化失敗，請檢視控制台除錯。";
+            }
+        }
+
+        // 2. 啟用鏡頭
+        function enableCam() {
+            navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
+                .then((stream) => {
+                    video.srcObject = stream;
+                    video.addEventListener("loadeddata", predictWebcam);
+                    statusDiv.textContent = "系統已就緒，請做出手勢！";
+                })
+                .catch((err) => {
+                    console.error("無法開啟攝影機:", err);
+                    statusDiv.textContent = "ERROR: 無法存取攝影機";
+                });
+        }
+
+        // 3. 逐幀辨識迴圈
+        async function predictWebcam() {
+            if (video.currentTime !== lastVideoTime && poseLandmarker) {
+                lastVideoTime = video.currentTime;
+                const results = await poseLandmarker.detectForVideo(video, performance.now());
+                processLandmarks(results);
+            }
+            requestAnimationFrame(predictWebcam);
+        }
+
+        // 4. 🛠️ 雙點 (手腕 + 手肘) 聯合揮手判定演算法
+        function processLandmarks(results) {
+            let instantIntent = null;
+
+            if (results.landmarks && results.landmarks.length > 0) {
+                const lm = results.landmarks[0];
+                const w = video.videoWidth || 640;
+                const h = video.videoHeight || 480;
+
+                // 自動選擇舉得較高的手臂 (左臂 11,13,15 或 右臂 12,14,16)
+                const leftWristY = lm[15].y * h;
+                const rightWristY = lm[16].y * h;
+                
+                const isRightArm = rightWristY < leftWristY;
+                const sIdx = isRightArm ? 12 : 11;
+                const eIdx = isRightArm ? 14 : 13;
+                const wIdx = isRightArm ? 16 : 15;
+
+                // 轉為像素座標
+                const sX = lm[sIdx].x * w, sY = lm[sIdx].y * h;
+                const eX = lm[eIdx].x * w, eY = lm[eIdx].y * h;
+                const wX = lm[wIdx].x * w, wY = lm[wIdx].y * h;
+
+                // 向量角度算術 (arctan2)
+                const armAngle = Math.atan2(eY - sY, eX - sX) * (180 / Math.PI);
+                const forearmAngle = Math.atan2(wY - eY, wX - eX) * (180 / Math.PI);
+
+                // 🛠️ 手腕與手肘雙點 Y 軸歷史更新 (15 幀)
+                wristYHistory.push(wY);
+                elbowYHistory.push(eY);
+                if (wristYHistory.length > 15) wristYHistory.shift();
+                if (elbowYHistory.length > 15) elbowYHistory.shift();
+
+                // 🛠️ 計算手腕與手肘的聯合動態位移量 (Total Movement)
+                let totalMovement = 0;
+                if (wristYHistory.length === 15 && elbowYHistory.length === 15) {
+                    const wristMove = Math.max(...wristYHistory) - Math.min(...wristYHistory);
+                    const elbowMove = Math.max(...elbowYHistory) - Math.min(...elbowYHistory);
+                    totalMovement = wristMove + elbowMove; // 兩點位移疊加
+                }
+
+                // ====== 休息狀態判斷 ======
+                if ((armAngle > 70 && armAngle < 110 && Math.abs(eX - sX) < 50) || (wY > sY && Math.abs(wX - sX) < 60)) {
+                    activeFramesCount = 0;
+                    instantIntent = "RESTING";
+                } else {
+                    activeFramesCount++;
+                }
+
+                // ====== 核心手勢判定 (離開休息區滿 0.5 秒 / 15 幀後啟用) ======
+                if (activeFramesCount >= 15) {
+                    // 1. 右轉彎
+                    if (forearmAngle > -120 && forearmAngle < -35) {
+                        instantIntent = "RIGHT TURN";
+                    } 
+                    // 2. 左轉彎
+                    else if (Math.abs(armAngle) < 20 || Math.abs(armAngle) > 160) {
+                        instantIntent = "LEFT TURN";
+                    } 
+                    // 3. 往下沈區間 (DOWNWARD_ZONE)
+                    else if (wY > eY + 20) {
+                        instantIntent = "DOWNWARD_ZONE";
+                        
+                        // 🛠️ 雙點聯合檢驗：當手腕+手肘總位移 > 16 px，即記為有效揮手 (1)
+                        const isWaving = totalMovement > 16 ? 1 : 0;
+                        overtakeVotePool.push(isWaving);
+                        if (overtakeVotePool.length > 30) overtakeVotePool.shift();
+                    }
+                }
+            }
+
+            // ====== 🛠️ 1 秒穩定度與二階段投票 ======
+            if (instantIntent && instantIntent !== "RESTING") {
+                if (instantIntent === lastDetectedGesture) {
+                    gestureStreakCount++;
+                } else {
+                    gestureStreakCount = 1;
+                    overtakeVotePool.length = 0;
+                }
+                lastDetectedGesture = instantIntent;
+
+                // 必須連續維持滿 30 幀 (1 秒)
+                if (gestureStreakCount >= 24) {
+                    if (instantIntent === "DOWNWARD_ZONE") {
+                        const waveSum = overtakeVotePool.reduce((a, b) => a + b, 0);
+                        
+                        // 🛠️ 靈敏度優化：30 幀內只要有 10 幀以上有揮動作動，即精確判定為允讓超車
+                        if (waveSum >= 10) {
+                            finalAction = "OVERTAKE ALLOWED";
+                        } else {
+                            finalAction = "STOP / SLOW DOWN";
+                        }
+                    } else {
+                        finalAction = instantIntent;
+                    }
+                } else {
+                    finalAction = null;
+                }
+            } else {
+                gestureStreakCount = 0;
+                lastDetectedGesture = null;
+                finalAction = null;
+                overtakeVotePool.length = 0;
+                wristYHistory.length = 0;
+                elbowYHistory.length = 0;
+            }
+
+            // 更新 UI 狀態顯示
+            if (finalAction) {
+                statusDiv.textContent = `Action: ${finalAction} (STABLE)`;
+            } else {
+                statusDiv.textContent = `Action: NONE (HOLD GESTURE ${gestureStreakCount}/30)`;
+            }
+        }
+
+        // 啟動模型初始化
+        initPoseLandmarker();
+    </script>
+</body>
+</html>

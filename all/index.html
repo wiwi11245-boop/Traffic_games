@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>允讓後車事件 - 獨立 250ms 變暗2.webp 轉場修復版</title>
+    <title>允讓後車事件 - 圖層階層校正版</title>
     <style>
         /* 全域基礎設定 */
         body {
@@ -25,11 +25,10 @@
             box-shadow: 0 15px 30px rgba(0,0,0,0.3);
             background-color: #87ceeb;
             z-index: 1;
-            
             transform: translate3d(0, 0, 0);
         }
 
-        /* 獨立背景圖層：8 秒平移 -1600px */
+        /* 🛠️ [z-index: 1] 獨立背景圖層：最底層 */
         .bg-layer {
             position: absolute;
             top: 0;
@@ -56,107 +55,69 @@
             100% { transform: translateX(-1600px); }
         }
 
-        /* 太陽定位 */
+        /* 🛠️ [z-index: 2] 太陽與花朵裝飾：浮於背景之上 */
         .static-sun {
-            position: absolute;
-            top: -62px;      
-            left: 98px;     
-            width: 172px;   
+            position: absolute; 
+            top: -62px; 
+            left: 98px; 
+            width: 172px; 
             height: auto;
-            z-index: 1.5;   
+            z-index: 2; /* 修正小數點，改為整數 2 */
             pointer-events: none;
         }
 
-        /* 花朵物件 */
         .scenery-flower {
-            position: absolute;
+            position: absolute; 
             width: 130px; 
             height: auto;
-            z-index: 1.5; 
+            z-index: 2; /* 修正小數點，改為整數 2 */
             pointer-events: none;
         }
         .flower-left { left: 380px; bottom: -50px; }
         .flower-right { right: 180px; bottom: -50px; }
 
-        /* 前景欄杆物件 */
+        /* 🛠️ [z-index: 3] 前景欄杆物件 */
         .foreground-fence {
-            position: absolute;
-            width: 225px;       
-            height: 88px;       
-            left: 145px;        
-            bottom: 30px;       
-            background-image: url('images/fence.png');
-            background-size: contain; 
-            background-position: center;
+            position: absolute; 
+            width: 225px; 
+            height: 88px; 
+            left: 145px; 
+            bottom: 30px;
+            background-image: url('images/fence.png'); 
+            background-size: contain;
+            background-position: center; 
             background-repeat: no-repeat;
-            z-index: 3; 
-            pointer-events: none; 
+            z-index: 6; 
+            pointer-events: none;
         }
 
-        /* 霧霧濾鏡遮罩 (開場用) */
+        /* 🛠️ [z-index: 4] 霧霧濾鏡遮罩 */
         .fog-filter {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            left: 0;
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            left: 0; 
             top: 0;
-            background-image: url('images/霧霧濾鏡.png');
+            background-image: url('images/霧霧濾鏡.png'); 
             background-size: 100% 100%;
             opacity: 0.65; 
-            z-index: 4;
-            pointer-events: none;
+            z-index: 6; 
+            pointer-events: none; 
             transition: opacity 0.5s ease;
         }
 
-        /* 🛠️ 專屬獨立 250ms 變暗 2.webp 轉場 Overlay 圖層 (z-index: 10 最頂層) */
-        .transition-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 1000px;
-            height: 400px;
-            object-fit: cover;
-            z-index: 10;
-            display: none; /* 平時隱藏，觸發時獨立播放 250ms */
-            pointer-events: none;
-        }
-
-        /* 標題畫面 / 321 倒數 */
-        .title-banner {
-            position: absolute;
-            width: 480px; 
-            height: auto;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 5;
-            pointer-events: none;
-            animation: pulseBlink 2s ease-in-out infinite;
-        }
-
-        .title-banner.countdown {
-            width: 1300px; 
-            animation: none; 
-        }
-
-        @keyframes pulseBlink {
-            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.98); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
-        }
-
-        /* 主角紅車基礎定位 */
+        /* 🛠️ [z-index: 5] 主角紅車與藍車：提升至圖層 5，確保車輛永遠清晰呈現！ */
         .player-car {
-            position: absolute;
-            width: 160px;  
-            height: auto;
+            position: absolute; 
+            width: 160px; 
+            height: auto; 
             bottom: -5px; 
             left: 0;
-            transform: translateX(-350px);
-            z-index: 2;
+            transform: translateX(-350px); 
+            z-index: 5; /* 由 2 提升至 5 */
             will-change: transform;
         }
 
-        /* 開場駛入動畫 (7.5s) */
         .player-car.active {
             animation: driveThroughTransform 7.5s ease-in forwards;
         }
@@ -171,7 +132,6 @@
             100% { transform: translateX(1180px) translateY(0px); }
         }
 
-        /* 主角紅車 8 秒時間軸：0s~6s 穩定行駛；7s~8s 衝出右側 */
         .player-car.event-driving {
             animation: redCar8sDash 8s linear forwards;
         }
@@ -180,20 +140,40 @@
             0% { transform: translateX(315px) translateY(0px); }
             25% { transform: translateX(315px) translateY(-4px); }
             50% { transform: translateX(315px) translateY(0px); }
-            75% { transform: translateX(315px) translateY(-4px); } /* 6s 時的位置 */
-            87.5% { transform: translateX(315px) translateY(0px); } /* 7s */
-            100% { transform: translateX(1500px) translateY(0px); } /* 8s 衝出右側 */
+            75% { transform: translateX(315px) translateY(-4px); }
+            87.5% { transform: translateX(315px) translateY(0px); }
+            100% { transform: translateX(1500px) translateY(0px); }
         }
 
-        /* 驚嘆號圖示定位 (跟隨紅車頭頂) */
+        .blue-car {
+            position: absolute; 
+            width: 160px; 
+            height: auto; 
+            bottom: 15px; 
+            left: 0;
+            transform: translateX(-300px); 
+            z-index: 5; /* 由 2 提升至 5 */
+            pointer-events: none; 
+            will-change: transform;
+        }
+
+        .blue-car.active { animation: blueCar8sDash 8s linear forwards; }
+
+        @keyframes blueCar8sDash {
+            0%, 60% { transform: translateX(-300px) translateY(0px); }
+            75%, 87.5% { transform: translateX(150px) translateY(-4px); }
+            100% { transform: translateX(1180px) translateY(0px); }
+        }
+
+        /* 🛠️ [z-index: 6] 驚嘆號定位：浮在車頭頂 */
         .exclamation-mark {
-            position: absolute;
-            width: 45px;
-            height: auto;
-            bottom: 200px;
-            left: 400px; 
-            opacity: 0;
-            z-index: 6;
+            position: absolute; 
+            width: 45px; 
+            height: auto; 
+            bottom: 200px; 
+            left: 400px;
+            opacity: 0; 
+            z-index: 6; 
             pointer-events: none;
         }
 
@@ -201,53 +181,46 @@
             animation: exclamationPop 8s linear forwards;
         }
 
-        /* 驚嘆號時間軸：6s (75%) 彈出顯示，7s (87.5%) 消失 */
         @keyframes exclamationPop {
             0%, 74.9% { opacity: 0; transform: translateY(10px) scale(0.5); }
-            75% { opacity: 0.8; transform: translateY(0px) scale(2); } /* 6s 彈出 */
-            78%, 87.5% { opacity: 0.5; transform: translateY(0px) scale(1.5); } 
+            75% { opacity: 0.8; transform: translateY(0px) scale(2); }
+            78%, 87.5% { opacity: 0.5; transform: translateY(0px) scale(1.5); }
             90%, 100% { opacity: 0; transform: translateY(-10px) scale(0.8); }
         }
 
-        /* 藍車 8 秒時間軸：0s~6s 在左側外；6s~8s 超越紅車衝出右側 */
-        .blue-car {
-            position: absolute;
-            width: 160px;
-            height: auto;
-            bottom: 15px;
-            left: 0;
-            transform: translateX(-300px);
-            z-index: 2;
+        /* 🛠️ [z-index: 7] 標題與字體圖片 */
+        .title-banner {
+            position: absolute; 
+            width: 480px; 
+            height: auto; 
+            left: 50%; 
+            top: 50%;
+            transform: translate(-50%, -50%); 
+            z-index: 7; 
             pointer-events: none;
-            will-change: transform;
+            animation: pulseBlink 2s ease-in-out infinite;
         }
 
-        .blue-car.active {
-            animation: blueCar8sDash 8s linear forwards;
+        .title-banner.countdown { width: 1300px; animation: none; }
+
+        @keyframes pulseBlink {
+            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.98); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
         }
 
-        @keyframes blueCar8sDash {
-            0%, 60% { transform: translateX(-300px) translateY(0px); } 
-            75%, 87.5% { transform: translateX(150px) translateY(-4px); } 
-            100% { transform: translateX(1180px) translateY(0px); } 
-        }
-
-        /* 「開始！」字體圖片 */
         .start-banner {
-            position: absolute;
+            position: absolute; 
             width: 200px; 
-            height: auto;
-            left: 50%;
+            height: auto; 
+            left: 50%; 
             top: 70px;
-            transform: translateX(-50%);
-            opacity: 0;
-            z-index: 5;
+            transform: translateX(-50%); 
+            opacity: 0; 
+            z-index: 7; 
             pointer-events: none;
         }
 
-        .start-banner.active {
-            animation: bannerFade 4.5s ease-in-out forwards;
-        }
+        .start-banner.active { animation: bannerFade 4.5s ease-in-out forwards; }
 
         @keyframes bannerFade {
             0% { opacity: 0; transform: translate(-50%, -15px) scale(0.5); }
@@ -255,64 +228,47 @@
             85%, 100% { opacity: 0; transform: translate(-50%, 15px) scale(0.95); }
         }
 
+        /* 🛠️ [z-index: 10] 250ms 變暗 2.webp 轉場 Overlay：永遠最頂層 */
+        .transition-overlay {
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            width: 1000px; 
+            height: 400px;
+            object-fit: cover; 
+            z-index: 10; 
+            display: none; 
+            pointer-events: none;
+        }
+
         /* 下方說明區 */
         .game-info-container {
-            width: 1000px;
-            margin: 15px auto 0 auto;
-            display: flex;
-            flex-direction: column; 
-            align-items: center;
-            gap: 8px; 
-            box-sizing: border-box;
-            padding: 0 10px;
+            width: 1000px; margin: 15px auto 0 auto; display: flex;
+            flex-direction: column; align-items: center; gap: 8px; box-sizing: border-box; padding: 0 10px;
         }
-
-        .info-text-block {
-            width: 100%;
-            max-width: 850px;
-            text-align: center;
-            color: #2c3e50;
-            margin: 0;
-        }
-
-        .warning-title {
-            font-size: 26px;
-            font-weight: bold;
-            color: #d9534f;
-            margin-top: 0;
-            margin-bottom: 6px; 
-        }
-
-        .story-description {
-            font-size: 17px;
-            line-height: 1.6;
-            color: #4a5568;
-            margin: 0; 
-        }
-
-        .gesture-diagram {
-            width: 750px;
-            height: auto;
-            margin-top: -300px; 
-            border-radius: 8px;
-            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.12));
-        }
+        .info-text-block { width: 100%; max-width: 850px; text-align: center; color: #2c3e50; margin: 0; }
+        .warning-title { font-size: 26px; font-weight: bold; color: #d9534f; margin-top: 0; margin-bottom: 6px; }
+        .story-description { font-size: 17px; line-height: 1.6; color: #4a5568; margin: 0; }
+        .gesture-diagram { width: 750px; height: auto; margin-top: -300px; border-radius: 8px; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.12)); }
     </style>
+
+    <!-- 🛠️ 引入四大事件 JS 腳本模组 -->
+    <script src="js/left.js"></script>
+    <script src="js/right.js"></script>
+    <script src="js/stop.js"></script>
+    <script src="js/overtake.js"></script>
 </head>
 <body>
 
     <!-- 1. 遊戲視窗畫面 -->
     <div id="gameViewport" class="game-viewport">
-        <!-- 獨立背景圖層 -->
         <div id="bgLayer" class="bg-layer"></div>
 
-        <!-- 太陽與花朵 -->
         <img src="images/sun.webp" class="static-sun" alt="太陽">
         <img src="images/FLOWER.webp" id="flowerLeft" class="scenery-flower flower-left" alt="裝飾花朵">
         <img src="images/FLOWER.webp" id="flowerRight" class="scenery-flower flower-right" alt="裝飾花朵">
         <div id="fence" class="foreground-fence"></div>
 
-        <!-- 主角紅車、藍車與驚嘆號標示 -->
         <img src="images/CAR.webp" id="playerCar" class="player-car" alt="紅車主角">
         <img src="images/驚嘆號.png" id="exclamationMark" class="exclamation-mark" alt="驚嘆號警示">
         <img src="images/CAR2.webp" id="blueCar" class="blue-car" alt="藍車事件">
@@ -321,7 +277,7 @@
         <div id="fogFilter" class="fog-filter"></div>
         <img src="images/標題畫面.png" id="titleBanner" class="title-banner" alt="按ENTER鍵進入遊戲">
 
-        <!-- 🛠️ 專屬獨立 250ms 變暗 2.webp 轉場圖層 (z-index: 10) -->
+        <!-- 獨立 250ms 變暗轉場 Overlay -->
         <img id="transitionOverlay" class="transition-overlay" alt="變暗轉場">
     </div>
 
@@ -336,7 +292,7 @@
         <img src="images/手勢示意圖.png" class="gesture-diagram" alt="駕駛手勢示意圖">
     </div>
 
-    <!-- 3. 控制與獨立過場腳本 -->
+    <!-- 3. 控制與 SPA 事件切換腳本 -->
     <script>
         let gameStarted = false;
 
@@ -353,41 +309,46 @@
         const fence = document.getElementById('fence');
         const transitionOverlay = document.getElementById('transitionOverlay');
 
-        // 素材預載
-        const imagesToPreload = [
-            'images/background.png',
-            'images/321.webp',
-            'images/CAR.webp',
-            'images/CAR2.webp',
-            'images/驚嘆號.png',
-            'images/變暗2.webp'
-        ];
-        imagesToPreload.forEach(src => {
-            const img = new Image();
-            img.src = src;
-            if (img.decode) img.decode().catch(() => {});
-        });
+        // 方法 B：關卡與 JS 渲染函數映射表
+        const eventScenes = {
+            1: { name: "左轉事件", render: renderLeftScene },
+            2: { name: "右轉事件", render: renderRightScene },
+            3: { name: "緩停事件", render: renderStopScene },
+            4: { name: "允讓超車事件", render: renderOvertakeScene }
+        };
 
-        // 🛠️ 核心：獨立 250ms 變暗 2.webp 轉場函數 (佔據完全獨立的 250ms 時間)
+        // 獨立 250ms 變暗 2.webp 轉場函數
         function playDarkTransition(onComplete) {
-            // 1. 顯示專屬轉場圖層
             transitionOverlay.style.display = 'block';
-            // 加上時間戳記確保變暗 2.webp 從第一影格重頭播放
             transitionOverlay.src = 'images/變暗2.webp?t=' + Date.now();
 
-            // 2. 獨立計時精確 250 毫秒 (250ms)
             setTimeout(() => {
                 requestAnimationFrame(() => {
-                    // 250ms 播放完畢的瞬間，執行場景切換邏輯 (onComplete)
                     if (typeof onComplete === 'function') {
                         onComplete();
                     }
                     requestAnimationFrame(() => {
-                        // 隱藏轉場 Overlay
                         transitionOverlay.style.display = 'none';
                     });
                 });
             }, 250); 
+        }
+
+        // 隨機觸發事件 (方法 B 極速物件化載入)
+        function triggerRandomEvent() {
+            const randomNum = Math.floor(Math.random() * 4) + 1;
+            const targetScene = eventScenes[randomNum];
+
+            console.log(`[方法 B SPA] 隨機數: ${randomNum} -> 載入場景: ${targetScene.name}`);
+
+            // 1. 清空 viewport 容器內容
+            viewport.innerHTML = '';
+
+            // 2. 呼叫對應場景的 JS 渲染函數
+            targetScene.render(viewport);
+
+            // 3. 重新掛載轉場 Overlay
+            viewport.appendChild(transitionOverlay);
         }
 
         // 按下 Enter 啟動倒數
@@ -411,25 +372,17 @@
             }
         });
 
-        // 🛠️ 監聽開場動畫結束：啟動「獨立 250ms 變暗2.webp 轉場 1」
+        // 監聽開場動畫結束
         playerCar.addEventListener('animationend', function(e) {
             if (e.animationName === 'driveThroughTransform') {
-                console.log("開場動畫完成！觸發【獨立 250ms 轉場 1】...");
-
-                // 呼叫獨立 250ms 轉場
                 playDarkTransition(() => {
-                    console.log("【獨立 250ms 轉場 1】結束，切換進入 8s 驚嘆號事件場景...");
-
-                    // 切換 8 秒背景
                     bgLayer.classList.add('event-mode');
 
-                    // 清理開場獨有元素
                     if (flowerLeft) flowerLeft.style.display = 'none';
                     if (flowerRight) flowerRight.style.display = 'none';
                     if (fence) fence.style.display = 'none';
                     if (startBanner) startBanner.style.display = 'none';
 
-                    // 啟動 8s 雙車與 6s 驚嘆號時間軸
                     playerCar.classList.remove('active');
                     playerCar.classList.add('event-driving');
                     blueCar.classList.add('active');
@@ -438,14 +391,11 @@
             }
         });
 
-        // 🛠️ 監聽 8 秒事件平移結束：啟動「獨立 250ms 變暗2.webp 轉場 2」
+        // 監聽 8 秒事件結束，無縫切換至隨機關卡
         bgLayer.addEventListener('animationend', function(e) {
             if (e.animationName === 'bgScroll8s') {
-                console.log("8s 事件完畢！觸發【獨立 250ms 轉場 2】...");
-
-                // 呼叫獨立 250ms 轉場
                 playDarkTransition(() => {
-                    console.log("【獨立 250ms 轉場 2】完成，準備進入手勢關卡！");
+                    triggerRandomEvent();
                 });
             }
         });

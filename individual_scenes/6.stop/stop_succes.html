@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>緩停事件場景 - 下半段（任務成功視覺分層版）</title>
+    <style>
+        /* 1. 遊戲視窗容器 */
+        .game-viewport {
+            width: 1000px;
+            height: 400px;
+            margin: 50px auto;
+            position: relative;
+            overflow: hidden;
+            border: 6px solid #4c8537;
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            
+            background-image: url('停止場景.png');
+            background-size: 100% 100%; 
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+
+        /* 2. 獨立太陽定位 */
+        .static-sun {
+            position: absolute;
+            top: -62px;      
+            left: 98px;      
+            width: 172px;    
+            height: auto;
+            z-index: 1.5;   
+            pointer-events: none;
+        }
+
+        /* 3. 頂層房屋二棟 (維持專案精確比例與位置) */
+        .top-house {
+            position: absolute;
+            width: 110px;       
+            height: auto;
+            bottom: -10px;      
+            z-index: 3;         
+            pointer-events: none;
+        }
+        .house-1 { left: 730px; }
+        .house-2 { left: 880px; }
+
+        /* 4. 紅色主角車定位與動畫 */
+        .player-car {
+            position: absolute;
+            width: 160px;       
+            height: auto;       
+            bottom: -5px;       
+            
+            animation: redCarSuccessDrive 6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            z-index: 2; 
+        }
+
+        /* 5. 藍色後方來車定位與動畫 (CAR2) */
+        .blue-car {
+            position: absolute;
+            width: 160px;       
+            height: auto;
+            bottom: 15px;       
+            
+            animation: blueCarSuccessDrive 6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            z-index: 2;
+        }
+
+        /* 6. 對向迴轉堵車群組基本容器 */
+        .car3-event-group {
+            position: absolute;
+            width: 110px;       
+            height: auto;
+            left: 740px;        
+            bottom: 70px;       
+            z-index: 1.8;       
+        }
+
+        .car3-event-group img {
+            position: absolute;
+            height: auto;
+            bottom: 0;
+        }
+
+        /* 🛠️ 階段 B 消失：中央兩輛車 (CAR3 與 CAR4) */
+        .car3-side {
+            width: 100%;
+            left: -90px;
+            animation: car3SidesFade 6s linear forwards;
+        }
+        .car3-side2 {
+            width: 100%;
+            left: 30px;
+            animation: car3SidesFade 6s linear forwards;
+        }
+
+        /* 🛠️ 階段 A 率先消失：右側 CAR3_BACK */
+        .car3-back {
+            width: 95px;       
+            left: 130px;         
+            animation: car3BackFade 6s linear forwards;
+        }
+
+        /* 🛠️ 階段 C 浮現：CAR5 採用您指定的精確定位與尺寸 */
+        .car5-parked {
+            position: absolute;
+            width: 110px;       /* 與 CAR4 比例完全一致 */
+            height: auto;
+            left: 790px;        /* 您的微調位置 */
+            bottom: 140px;      /* 您的微調位置 */
+            z-index: 1.9;       
+            opacity: 0;         /* 初始隱形，隨後淡入浮現 */
+            pointer-events: none;
+
+            animation: car5FadeIn 6s linear forwards;
+        }
+
+        /* ==========================================
+           7. 動態時間軸控制 (Keyframes)
+           ========================================== */
+        
+        /* 🛠️ 紅車（主角）：後拉 30px，緩停位置改為 470px */
+        @keyframes redCarSuccessDrive {
+            0% { left: 205px; transform: translateY(0px); }
+            
+            /* 35% (1.5s)：抵達 470px 處 (後拉 30px，不碰到前方車尾) */
+            35% { left: 470px; transform: translateY(0px); }
+            
+            /* 35% ~ 40% (1.5s - 2.0s)：10% 緩停怠速抖動 */
+            35.1% { left: 470px; transform: translateY(-3px); }
+            40% { left: 470px; transform: translateY(0px); }
+            
+            /* 40% ~ 60% (2.0s - 3.0s)：原地等待對向堵車散去與 CAR5 停妥 */
+            60% { left: 470px; transform: translateY(0px); }
+            
+            /* 60% ~ 100% (3.0s - 5.0s)：路口暢通，全速衝出右側邊界 */
+            100% { 
+                left: 1100px; 
+                transform: translateY(0px); 
+            }
+        }
+
+        /* 🛠️ 藍車（CAR2）：後拉 30px，緩停位置改為 370px */
+        @keyframes blueCarSuccessDrive {
+            0% { left: 50px; transform: translateY(0px); }
+            
+            /* 35% (1.5s)：抵達 370px 處 (後拉 30px) */
+            35% { left: 370px; transform: translateY(0px); }
+            
+            /* 35.1% ~ 40% (1.5s - 2.0s)：10% 緩停怠速抖動 */
+            35.1% { left: 370px; transform: translateY(-3px); }
+            40% { left: 370px; transform: translateY(0px); }
+            
+            /* 40% ~ 60% (2.0s - 3.0s)：等待紅車起步 */
+            60% { left: 370px; transform: translateY(0px); }
+            
+            /* 60% ~ 100% (3.0s - 5.0s)：跟隨紅車全速衝出右側邊界 */
+            100% { 
+                left: 1100px; 
+                transform: translateY(0px); 
+            }
+        }
+
+        /* 🛠️ 階段 A：CAR3_BACK 率先於 40% ~ 48% 淡出消失 */
+        @keyframes car3BackFade {
+            0%, 38% { opacity: 1; }
+            40%, 100% { opacity: 0; }
+        }
+
+        /* 🛠️ 階段 B：CAR3 & CAR4 緊著於 48% ~ 56% 淡出消失 */
+        @keyframes car3SidesFade {
+            0%, 48% { opacity: 1; }
+            56%, 100% { opacity: 0; }
+        }
+
+        /* 🛠️ 階段 C：CAR5 於 50% ~ 60% 漸漸浮現並保持至最後一影格 */
+        @keyframes car5FadeIn {
+            0%, 50% { opacity: 0; }
+            60%, 100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-viewport">
+        <!-- 獨立靜態太陽 -->
+        <img src="sun.gif" class="static-sun" alt="原地太陽">
+
+        <!-- 紅色主角車 (起點 205px -> 緩停 470px) -->
+        <img src="CAR.gif" class="player-car" alt="紅車主角">
+
+        <!-- 藍色事件車 (後車 CAR2，起點 50px -> 緩停 370px) -->
+        <img src="CAR2.gif" class="blue-car" alt="藍車後車">
+
+        <!-- 對向迴轉堵車群組 (內部獨立分階段淡出) -->
+        <div class="car3-event-group">
+            <img src="CAR3.png" class="car3-side" alt="迴轉車側身CAR3">
+            <img src="CAR4.png" class="car3-side2" alt="迴轉車側身CAR4">
+            <img src="CAR3_BACK.gif" class="car3-back" alt="迴轉車後視">
+        </div>
+
+        <!-- CAR5 轉向車 (於 50%~60% 浮現，定格在 left: 790px, bottom: 140px) -->
+        <img src="CAR5.png" class="car5-parked" alt="停至商店前 CAR5">
+
+        <!-- 頂層房屋二棟 -->
+        <img src="house.png" class="top-house house-1" alt="前景房屋A">
+        <img src="house.png" class="top-house house-2" alt="前景房屋B">
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>允讓後車事件 - 遊戲標題與開場</title>
+    <style>
+        /* 全域基礎設定：統一淡米綠底色 */
+        body {
+            background-color: #f4f6f0;
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            margin: 0;
+            padding: 20px 0 50px 0;
+        }
+
+        /* 1. 遊戲視窗容器 (1000px * 400px) */
+        .game-viewport {
+            width: 1000px;
+            height: 400px;
+            margin: 20px auto 0 auto;
+            position: relative;
+            overflow: hidden;
+            border: 6px solid #4c8537;
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            
+            /* 導入 begin.png 背景 */
+            background-image: url('begin.png');
+            background-size: 100% 100%; 
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+
+        /* 太陽定位 */
+        .static-sun {
+            position: absolute;
+            top: -62px;      
+            left: 98px;     
+            width: 172px;   
+            height: auto;
+            z-index: 1.5;   
+            pointer-events: none;
+        }
+
+        /* 花朵物件 */
+        .scenery-flower {
+            position: absolute;
+            width: 130px; 
+            height: auto;
+            z-index: 1.5; 
+            pointer-events: none;
+        }
+        .flower-left { left: 380px; bottom: -50px; }
+        .flower-right { right: 180px; bottom: -50px; }
+
+        /* 前景欄杆物件 */
+        .foreground-fence {
+            position: absolute;
+            width: 225px;       
+            height: 88px;       
+            left: 145px;        
+            bottom: 30px;       
+            background-image: url('fence.png');
+            background-size: contain; 
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: 3; 
+            pointer-events: none; 
+        }
+
+        /* 霧霧濾鏡遮罩 (.fog-filter) */
+        .fog-filter {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            background-image: url('霧霧濾鏡.png');
+            background-size: 100% 100%;
+            opacity: 0.65; 
+            z-index: 4;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        /* 標題畫面 / 321 倒數 GIF (.title-banner) */
+        .title-banner {
+            position: absolute;
+            width: 480px; 
+            height: auto;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+            pointer-events: none;
+            
+            /* 按 ENTER 鍵前的呼吸閃爍動畫 */
+            animation: pulseBlink 2s ease-in-out infinite;
+        }
+
+        /* 切換為 321.gif 倒數時的樣式微調 */
+        .title-banner.countdown {
+            width: 1300px; /* 321.gif 倒數顯示尺寸 */
+            animation: none; /* 移除呼吸閃爍 */
+        }
+
+        @keyframes pulseBlink {
+            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.98); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
+        }
+
+        /* 小車定位 (初始隱形於視窗外) */
+        .player-car {
+            position: absolute;
+            width: 160px;  
+            height: auto;
+            bottom: -5px; 
+            left: -350px; /* 預設停在左側畫面外 */
+            z-index: 2;
+        }
+
+        /* 當加入 .active class 時開始播放一鏡到底動態動畫 */
+        .player-car.active {
+            animation: driveThrough 11s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        /* 一鏡到底行駛時間軸 */
+        @keyframes driveThrough {
+            0% { left: -350px; }
+            30% { left: 100px; transform: translateY(0px); }
+            35% { left: 100px; transform: translateY(-3px); }
+            38% { left: 100px; transform: translateY(0px); }
+            100% { left: 2000px; transform: translateY(0px); }
+        }
+
+        /* 「開始！」字體圖片 */
+        .start-banner {
+            position: absolute;
+            width: 200px; 
+            height: auto;
+            left: 50%;
+            top: 70px;
+            transform: translateX(-50%);
+            opacity: 0;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* 開始字體淡入淡出動畫 */
+        .start-banner.active {
+            animation: bannerFade 6s ease-in-out forwards;
+        }
+
+        @keyframes bannerFade {
+            0% { opacity: 0; transform: translate(-50%, -15px) scale(0.5); }
+            32%, 58% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+            65%, 100% { opacity: 0; transform: translate(-50%, 15px) scale(0.95); }
+        }
+
+        /* ==========================================
+           2. 視窗下方說明區 (維持統一版型)
+           ========================================== */
+        .game-info-container {
+            width: 1000px;
+            margin: 15px auto 0 auto;
+            display: flex;
+            flex-direction: column; 
+            align-items: center;
+            gap: 8px; 
+            box-sizing: border-box;
+            padding: 0 10px;
+        }
+
+        .info-text-block {
+            width: 100%;
+            max-width: 850px;
+            text-align: center;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .warning-title {
+            font-size: 26px;
+            font-weight: bold;
+            color: #d9534f;
+            margin-top: 0;
+            margin-bottom: 6px; 
+        }
+
+        .story-description {
+            font-size: 17px;
+            line-height: 1.6;
+            color: #4a5568;
+            margin: 0; 
+        }
+
+        .gesture-diagram {
+            width: 750px;
+            height: auto;
+            margin-top: -300px; 
+            border-radius: 8px;
+            filter: drop-shadow(0 4px 10px rgba(0,0,0,0.12));
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. 遊戲視窗畫面 -->
+    <div class="game-viewport">
+        <!-- 獨立靜態太陽與背景物件 -->
+        <img src="SUN.gif" class="static-sun" alt="太陽">
+        <img src="FLOWER.gif" class="scenery-flower flower-left" alt="裝飾花朵">
+        <img src="FLOWER.gif" class="scenery-flower flower-right" alt="裝飾花朵">
+        <div class="foreground-fence"></div>
+
+        <!-- 主角小車 (CAR.gif) -->
+        <img src="CAR.gif" id="playerCar" class="player-car" alt="行駛小車">
+
+        <!-- 「開始！」字體圖片 -->
+        <img src="begin_font.png" id="startBanner" class="start-banner" alt="開始遊戲">
+
+        <!-- 霧霧濾鏡半透明遮罩 -->
+        <div id="fogFilter" class="fog-filter"></div>
+
+        <!-- 標題畫面圖片 (按 ENTER 鍵替換為 321.gif) -->
+        <img src="標題畫面.png" id="titleBanner" class="title-banner" alt="按ENTER鍵進入遊戲">
+    </div>
+
+    <!-- 2. 視窗下方遊戲說明區 (維持統一底色與風格) -->
+    <div class="game-info-container">
+        <div class="info-text-block">
+            <div class="warning-title">糟糕！車燈突然故障了！</div>
+            <p class="story-description">
+                操作者必須前往修車廠進行維修。在抵達之前，只能透過駕駛人手勢向後方車輛表達行駛意圖，避免發生交通事故。快一起安全抵達修车廠吧！
+            </p>
+        </div>
+        <img src="手勢示意圖.png" class="gesture-diagram" alt="駕駛手勢示意圖">
+    </div>
+
+    <!-- 3. 鍵盤事件控制邏輯 -->
+    <script>
+        let gameStarted = false;
+
+        window.addEventListener('keydown', function(e) {
+            // 當按下 ENTER 鍵且遊戲尚未啟動時
+            if ((e.key === 'Enter' || e.keyCode === 13) && !gameStarted) {
+                gameStarted = true;
+
+                const titleBanner = document.getElementById('titleBanner');
+                const fogFilter = document.getElementById('fogFilter');
+                const playerCar = document.getElementById('playerCar');
+                const startBanner = document.getElementById('startBanner');
+
+                // 1. 淡出移除霧霧濾鏡
+                fogFilter.style.opacity = '0';
+                setTimeout(() => {
+                    fogFilter.style.display = 'none';
+                }, 500);
+
+                // 2. 將「標題畫面.png」替換為倒數動態「321.gif」
+                titleBanner.src = '321.gif?t=' + new Date().getTime(); // 加上時間戳記確保重頭播放 GIF
+                titleBanner.classList.add('countdown');
+
+                // 3. 倒數 3 秒結束後，隱藏倒數圖檔，並啟動小車進場動畫與開始標題
+                setTimeout(() => {
+                    titleBanner.style.display = 'none'; // 隱藏倒數 GIF
+                    
+                    // 啟動小車滑入發動動畫 (driveThrough)
+                    playerCar.classList.add('active');
+                    
+                    // 啟動「開始！」字體淡入動畫
+                    startBanner.classList.add('active');
+                }, 3000); // 3 秒倒數對齊
+            }
+        });
+    </script>
+
+</body>
+</html>

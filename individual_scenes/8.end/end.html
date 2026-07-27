@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抵達修車廠 - 三影格平滑漸變結局場景</title>
+    <style>
+        /* 1. 遊戲視窗容器 */
+        .game-viewport {
+            width: 1000px;
+            height: 400px;
+            margin: 50px auto;
+            position: relative;
+            overflow: hidden;
+            border: 6px solid #4c8537;
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            
+            background-image: url('修車廠.png');
+            background-size: 100% 100%; 
+            background-repeat: no-repeat;
+            z-index: 1;
+        }
+
+        /* 2. 太陽落山動畫 */
+        .setting-sun {
+            position: absolute;
+            width: 172px;    
+            height: auto;
+            z-index: 1.5;   
+            pointer-events: none;
+            
+            animation: sunSunset 10s ease-in-out forwards;
+        }
+
+        /* ==========================================
+           3. 四階段主角車圖層定位與動畫
+           ========================================== */
+        
+        /* 影格一：側身開至車庫下方 (CAR_finish.png) */
+        .car-frame1 {
+            position: absolute;
+            width: 200px;       
+            height: auto;       
+            bottom: 75px;       
+            z-index: 2;
+            opacity: 1;
+            
+            animation: parkStage1 10s cubic-bezier(0.1, 0.85, 0.35, 1) forwards;
+        }
+
+        /* 影格二：轉向後視視角 (CAR_BACK.png) */
+        .car-frame2 {
+            position: absolute;
+            width: 80px;       
+            height: auto;       
+            left: 900px;        
+            bottom: 70px;       
+            z-index: 2;
+            opacity: 0;         
+            
+            animation: parkStage2 10s linear forwards;
+        }
+
+        /* 影格三：開燈停妥在修車廠平台 (CAR_finish2.png) */
+        .car-frame3 {
+            position: absolute;
+            width: 200px;       
+            height: auto;       
+            left: 770px;        
+            bottom: 160px;       
+            z-index: 2;
+            opacity: 0;         
+            
+            animation: parkStage3 10s linear forwards;
+        }
+
+        /* 🛠️ 影格四：熄燈車輛定位在同個位置 (CAR_finish3.png) */
+        .car-frame4 {
+            position: absolute;
+            width: 127px;       /* 比例位置與 car-frame3 完全一致 */
+            height: auto;       
+            left: 843px;        
+            bottom: 160px;       
+            z-index: 3;
+            opacity: 0;         /* 預設隱形 */
+            
+            animation: parkStage4 10s linear forwards;
+        }
+
+        /* 4. 單次天黑遮罩 */
+        .dark-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            background-color: #111118; 
+            z-index: 4;         
+            pointer-events: none;
+            opacity: 0;
+            
+            animation: smoothDarkenOnce 10s ease-out forwards;
+        }
+
+        /* 5. 「感謝遊玩」結尾標題 */
+        .thanks-banner {
+            position: absolute;
+            width: 320px;       
+            height: auto;
+            left: 50%;
+            top: -50px;         
+            transform: translateX(-50%);
+            z-index: 4;         
+            pointer-events: none;
+            opacity: 0;         
+            
+            animation: thanksFadeIn 10s ease-out forwards;
+        }
+
+        .foreground-mountain {
+            position: absolute;
+            width: 1000px;       
+            height: 400px;       
+            bottom: 17px;       
+    
+            background-image: url('mountain.png');
+            background-size: contain; 
+            background-position: center;
+            background-repeat: no-repeat;
+    
+            z-index: 3; /* 壓在車子(z-index: 2)最前方 */
+            pointer-events: none; 
+        }
+
+        /* ==========================================
+           6. 動態時間軸控制 (Keyframes)
+           ========================================== */
+
+        /* 影格一 (CAR_finish.png)：0%~35% 駛入，35%~45% 漸漸淡出 */
+        @keyframes parkStage1 {
+            0% { left: -250px; opacity: 1; }
+            40% { left: 800px; opacity: 1; }      
+            40.5%, 100% { left: 800px; opacity: 0; }
+        }
+
+        /* 影格二 (CAR_BACK.png)：46% 淡入，55% 爬升，60% 淡出 */
+        @keyframes parkStage2 {
+            0%, 41% { opacity: 0; }
+            42% { bottom: 60px; opacity: 1; }
+            50% { bottom: 90px; opacity: 1; }              
+            51%, 100% { opacity: 0; }             
+        }
+
+        /* 🛠️ 影格三 (CAR_finish2.png)：65% 顯現開燈車，75%~78% 熄燈淡出 */
+        @keyframes parkStage3 {
+            0%, 53% { opacity: 0; transform: translateY(0px); }
+            55%, 60% { opacity: 1; transform: translateY(0px); } 
+            65%, 100% { opacity: 0; transform: translateY(0px); } /* 75%~78% 關燈淡出 */
+        }
+
+        /* 🛠️ 影格四 (CAR_finish3.png)：75%~78% 接力顯現熄燈車，並定格至結束 */
+        @keyframes parkStage4 {
+            0%, 55% { opacity: 0; transform: translateY(0px); }
+            60%, 100% { opacity: 1; transform: translateY(0px); } /* 78% 後持續顯示 */
+        }
+
+        /* 太陽落山時間軸 */
+        @keyframes sunSunset {
+            0% { left: 98px; top: -62px; opacity: 1; }
+            65%, 100% { left: 98px; top: -30px; opacity: 0.2; }
+        }
+
+        /* 天黑變暗延後至 65% 才開始啟動 (第 5.2 秒) */
+        @keyframes smoothDarkenOnce {
+            0%, 64% { opacity: 0; }
+            65% { opacity: 0.2; }
+            80%, 100% { opacity: 0.85; }
+        }
+
+        /* 「感謝遊玩」結尾標題：天黑後滑順淡入 */
+        @keyframes thanksFadeIn {
+            0%, 70% { opacity: 0; transform: translate(-50%, -15px); }
+            88%, 100% { opacity: 1; transform: translate(-50%, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-viewport">
+        <!-- 落日太陽 (sun.gif) -->
+        <img src="sun.gif" class="setting-sun" alt="落日太陽">
+
+        <!-- 影格一：側身駛入 (CAR_finish.png) -->
+        <img src="CAR_finish.png" class="car-frame1" alt="第一影格主角車">
+
+        <!-- 影格二：轉向後視 (CAR_BACK.png) -->
+        <img src="CAR_BACK.png" class="car-frame2" alt="第二影格後視車">
+
+        <!-- 影格三：開燈停妥 (CAR_finish2.png) -->
+        <img src="CAR_finish2.png" class="car-frame3" alt="第三影格停妥車">
+
+        <!-- 🛠️ 影格四：熄燈停妥 (CAR_finish3.png) -->
+        <img src="CAR_finish3.png" class="car-frame4" alt="第四影格熄燈車">
+
+        <!-- 單次天黑遮罩 (65% 開始變暗) -->
+        <div class="dark-overlay"></div>
+
+        <div class="foreground-mountain"></div>
+
+        <!-- 結尾標題 (感謝遊玩.png) -->
+        <img src="感謝遊玩.png" class="thanks-banner" alt="感謝遊玩標題">
+    </div>
+
+</body>
+</html>
