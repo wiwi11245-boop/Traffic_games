@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>極簡關卡測試視窗</title>
+    <style>
+        body {
+            background-color: #f4f6f0;
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            margin: 0;
+            padding: 40px 0;
+        }
+
+        .game-viewport {
+            width: 1000px;
+            height: 400px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            border: 6px solid #4c8537;
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            background-color: #87ceeb;
+            z-index: 1;
+            transform: translate3d(0, 0, 0);
+        }
+
+        .transition-overlay {
+            position: absolute; top: 0; left: 0; width: 1000px; height: 400px;
+            object-fit: cover; z-index: 10; display: none; pointer-events: none;
+        }
+    </style>
+
+    <!-- 🛠️【自訂抽換區】：註解/取消註解 您想測試的 JS 檔案 -->
+    <script src="js/stop_all.js"></script>
+    <!-- <script src="js/left.js"></script> -->
+    <!-- <script src="js/stop.js"></script> -->
+    <!-- <script src="js/overtake.js"></script> -->
+</head>
+<body>
+
+    <div id="gameViewport" class="game-viewport">
+        <img id="transitionOverlay" class="transition-overlay" alt="變暗轉場">
+    </div>
+
+    <script>
+        const viewport = document.getElementById('gameViewport');
+        const transitionOverlay = document.getElementById('transitionOverlay');
+
+        function playDarkTransition(onComplete) {
+            transitionOverlay.style.display = 'block';
+            transitionOverlay.src = 'images/變暗2.webp?t=' + Date.now();
+
+            setTimeout(() => {
+                requestAnimationFrame(() => {
+                    if (typeof onComplete === 'function') onComplete();
+                    requestAnimationFrame(() => {
+                        transitionOverlay.style.display = 'none';
+                    });
+                });
+            }, 250); 
+        }
+
+        // 🛠️ 智慧自動尋找已載入的渲染函數
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderRightScene === 'function') {
+                console.log("[測試啟動] 載入右轉事件 (renderRightScene)");
+                renderRightScene(viewport);
+            } else if (typeof renderLeftScene === 'function') {
+                console.log("[測試啟動] 載入左轉事件 (renderLeftScene)");
+                renderLeftScene(viewport);
+            } else if (typeof renderStopScene === 'function') {
+                console.log("[測試啟動] 載入緩停事件 (renderStopScene)");
+                renderStopScene(viewport);
+            } else if (typeof renderOvertakeScene === 'function') {
+                console.log("[測試啟動] 載入超車事件 (renderOvertakeScene)");
+                renderOvertakeScene(viewport);
+            } else {
+                console.error("❌ 未檢測到任何有效的渲染函數！請確認上方 <script src='...'> 路徑是否正確。");
+            }
+        });
+    </script>
+
+</body>
+</html>
