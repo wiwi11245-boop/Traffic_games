@@ -1,7 +1,20 @@
-// 🛠️ 修正版 end.js：優化駛入慣性曲線，解決進場後半段過度緩慢停滯的問題
+// 🛠️ 完整動態版 end.js：整合 end.mp3(5%)、感謝遊玩時序切換 結局音樂.mp3(5%, loop)
 
 function renderEndScene(container, onReturnToTitle) {
     let canReturnToTitle = false;
+
+    // 🎵 音效與音樂宣告
+    const audioEnd = new Audio('sound_effect/end.mp3');
+    audioEnd.loop = false;
+    audioEnd.volume = 0.1; // 10% 音量
+
+    const audioEndingTheme = new Audio('sound_effect/結局音樂.mp3');
+    audioEndingTheme.loop = true; // 循環播放直到按下 Enter
+    audioEndingTheme.volume = 0.05; // 5% 音量
+
+    // 1. 場景開啟，立即播放 end.mp3
+    audioEnd.currentTime = 0;
+    audioEnd.play().catch(err => console.warn("end 音樂播放受阻:", err));
 
     if (!document.getElementById('css-scene-end-gpu-optimized')) {
         const style = document.createElement('style');
@@ -75,10 +88,10 @@ function renderEndScene(container, onReturnToTitle) {
             }
 
             /* ==========================================
-               ⚡ 時間軸優化 Keyframes (12s 總時長)
+               ⚡ 時間軸 Keyframes (12s 總時長)
                ========================================== */
 
-            /* 影格一 (CAR_finish.png)：流暢快速駛入，於 35% 停下，不拖泥帶水 */
+            /* 影格一 (CAR_finish.png)：流暢快速駛入，於 35% 停下 */
             @keyframes parkStage1Gpu {
                 0% { transform: translate3d(-250px, 0, 0); opacity: 1; }
                 35% { transform: translate3d(800px, 0, 0); opacity: 1; }
@@ -119,7 +132,7 @@ function renderEndScene(container, onReturnToTitle) {
                 80%, 100% { opacity: 0.85; }
             }
 
-            /* 感謝遊玩 */
+            /* 感謝遊玩 (70% 處即 8.4s 開始淡入) */
             @keyframes thanksFadeInOutGpu {
                 0%, 70% { opacity: 0; transform: translate3d(-50%, -15px, 0); }
                 74%, 82% { opacity: 1; transform: translate3d(-50%, 0, 0); }
@@ -160,7 +173,14 @@ function renderEndScene(container, onReturnToTitle) {
         </div>
     `;
 
-    // 雙重 requestAnimationFrame 防重排
+    // 2. 於 8400ms（70% 感謝遊玩.png 出現時）切換播放 結局音樂.mp3
+    setTimeout(() => {
+        audioEnd.pause();
+        audioEndingTheme.currentTime = 0;
+        audioEndingTheme.play().catch(err => console.warn("結局音樂 播放受阻:", err));
+    }, 8400); // 12000ms * 70% = 8400ms
+
+    // 雙重 requestAnimationFrame 防重排，於 10.5 秒後啟用呼吸燈與 Enter 返回功能
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             setTimeout(() => {
@@ -174,10 +194,15 @@ function renderEndScene(container, onReturnToTitle) {
         });
     });
 
-    // 按下 Enter 鍵回到標題
+    // 3. 按下 Enter 鍵回到標題並停止結局音樂
     function handleReturnEnter(e) {
         if (canReturnToTitle && (e.key === 'Enter' || e.keyCode === 13)) {
             window.removeEventListener('keydown', handleReturnEnter);
+
+            // 停止結局音樂
+            audioEndingTheme.pause();
+            audioEndingTheme.currentTime = 0;
+
             if (typeof onReturnToTitle === 'function') {
                 onReturnToTitle();
             }
