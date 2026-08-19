@@ -155,12 +155,27 @@ function onResults(results) {
             isModelLoaded = true;
 
         }
+        
+        const LEFT_ARM_INDICES = [11, 13, 15, 19];
+        
+        // 2. 定義自訂連線 (肩膀 -> 手肘 -> 手腕 -> 食指)
+        const LEFT_ARM_CONNECTIONS = [
+            [11, 13],
+            [13, 15],
+            [15, 19]
+        ];
 
+        // 3. 過濾節點：將不在 LEFT_ARM_INDICES 中的節點 visibility 設為 0 以隱藏
+        const filteredLandmarks = results.poseLandmarks.map((lm, index) => {
+            if (LEFT_ARM_INDICES.includes(index)) {
+                return lm; // 保留需要的節點
+            }
+            return { ...lm, visibility: 0 }; // 隱藏其他節點
+        });
 
-
-        drawConnectors(canvasCtx, results.poseLandmarks, POSE_CONNECTIONS, {color: '#00FF00', lineWidth: 3});
-
-        drawLandmarks(canvasCtx, results.poseLandmarks, {color: '#FF0000', lineWidth: 2});
+        // 4. 使用過濾後的資料與自訂連線繪圖，加入 visibilityMin 確保被隱藏的點不被畫出
+        drawConnectors(canvasCtx, filteredLandmarks, LEFT_ARM_CONNECTIONS, {color: '#00FF00', lineWidth: 3});
+        drawLandmarks(canvasCtx, filteredLandmarks, {color: '#FF0000', lineWidth: 2, visibilityMin: 0.1});
 
 
 
@@ -172,7 +187,26 @@ function onResults(results) {
 
         const leftIndex = results.poseLandmarks[19];
 
+        const VISIBILITY_THRESHOLD = 0.6;
+        
+        const isArmVisible = leftShoulder.visibility > VISIBILITY_THRESHOLD &&
+                             leftElbow.visibility > VISIBILITY_THRESHOLD &&
+                             leftWrist.visibility > VISIBILITY_THRESHOLD;
 
+        if (!isArmVisible) {
+            // 如果左手不在畫面內或被遮擋，強制重置狀態為 NONE
+            currentState = 'NONE';
+            consecutiveFrames = 0;
+            isMoving = false;
+            moveStartFrames = 0;
+            wavingYHistory = [];
+            
+            if (gestureStatusEl) gestureStatusEl.innerText = 'NONE (OUT OF FRAME)';
+            
+            // 恢復畫布狀態並直接結束這回合，不執行後續的數學計算與手勢判斷
+            canvasCtx.restore();
+            return;
+        }
 
         const armAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
 

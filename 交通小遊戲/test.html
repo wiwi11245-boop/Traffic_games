@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>極簡關卡測試視窗 - 修正語法傳參版</title>
+    <style>
+        body {
+            background-color: #f4f6f0;
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            margin: 0;
+            padding: 40px 0;
+        }
+
+        .game-viewport {
+            width: 1000px;
+            height: 400px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            border: 6px solid #4c8537;
+            border-radius: 12px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            background-color: #87ceeb;
+            z-index: 1;
+            transform: translate3d(0, 0, 0);
+        }
+
+        .transition-overlay {
+            position: absolute; top: 0; left: 0; width: 1000px; height: 400px;
+            object-fit: cover; z-index: 10; display: none; pointer-events: none;
+        }
+    </style>
+
+    <!-- 🛠️【自訂抽換區】：取消註解您想測試的關卡 JS 檔案（一次測試一個即可） -->
+    <!-- <script src="js/end.js"></script> -->
+    <!-- <script src="js/left_all.js"></script> -->
+    <!-- <script src="js/right_all.js"></script> -->
+    <!-- <script src="js/stop_all.js"></script> -->
+    <script src="js/overtake_all.js"></script>
+
+    <!-- 🛠️ 載入影像辨識核心腳本 IR.js (會自動在右上角建立鏡頭視窗) -->
+         <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    <script type="module" src="js/IR.js"></script>
+</head>
+<body>
+
+    <div id="gameViewport" class="game-viewport">
+        <img id="transitionOverlay" class="transition-overlay" alt="變暗轉場">
+    </div>
+
+    <script>
+        const viewport = document.getElementById('gameViewport');
+        const transitionOverlay = document.getElementById('transitionOverlay');
+
+        function playDarkTransition(onComplete) {
+            transitionOverlay.style.display = 'block';
+            transitionOverlay.src = 'images/變暗2.webp?t=' + Date.now();
+
+            setTimeout(() => {
+                requestAnimationFrame(() => {
+                    if (typeof onComplete === 'function') onComplete();
+                    requestAnimationFrame(() => {
+                        transitionOverlay.style.display = 'none';
+                    });
+                });
+            }, 250); 
+        }
+
+        // 通用測試重播函數 (含安全檢查)
+        function runSceneTest(renderFn, sceneName) {
+            if (typeof renderFn !== 'function') {
+                console.error(`❌ [錯誤] 傳入 ${sceneName} 的渲染函數無效！`);
+                return;
+            }
+
+            console.log(`[測試啟動] 載入場景：${sceneName}`);
+            viewport.innerHTML = '';
+
+            renderFn(viewport, (isSuccess) => {
+                console.log(`🎉 [測試結算] ${sceneName} 判定結果: ${isSuccess ? '成功' : '失敗'}，250ms 轉場後重新開始測試...`);
+                playDarkTransition(() => {
+                    runSceneTest(renderFn, sceneName);
+                });
+            });
+
+            viewport.appendChild(transitionOverlay);
+        }
+
+        // 🛠️ 智慧自動尋找已載入的渲染函數
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof renderEndScene === 'function') {
+                console.log("[測試啟動] 載入結局場景 (renderEndScene)");
+                viewport.innerHTML = '';
+                renderEndScene(viewport, () => {
+                    console.log("🎉 [測試觸發] 結局收到 Enter 鍵！重播結局...");
+                    playDarkTransition(() => {
+                        document.location.reload();
+                    });
+                });
+                viewport.appendChild(transitionOverlay);
+            } else if (typeof renderRightScene === 'function') {
+                runSceneTest(renderRightScene, "右轉事件 (renderRightScene)");
+            } else if (typeof renderLeftScene === 'function') {
+                runSceneTest(renderLeftScene, "左轉事件 (renderLeftScene)");
+            } else if (typeof renderStopScene === 'function') {
+                // 🛠️ 修正問題處：傳入 renderStopScene 而非 runSceneTest
+                runSceneTest(renderStopScene, "緩停事件 (renderStopScene)");
+            } else if (typeof renderOvertakeScene === 'function') {
+                runSceneTest(renderOvertakeScene, "超車事件 (renderOvertakeScene)");
+            } else {
+                console.error("❌ 未檢測到任何有效的渲染函數！請確認上方 <script src='...'> 路徑是否正確。");
+            }
+        });
+    </script>
+
+</body>
+</html>
