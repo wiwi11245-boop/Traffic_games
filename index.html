@@ -291,13 +291,63 @@
 
         // 預載清單 (已完全切換為 background.webp 小圖)
         const assetsToPreload = [
-            'images/begin.webp', 'images/background.webp', 'images/sun.webp', 'images/FLOWER.webp',
-            'images/fence.webp', 'images/CAR.webp', 'images/CAR2.webp', 'images/驚嘆號.webp',
-            'images/begin_font.webp', 'images/霧霧濾鏡.webp', 'images/標題畫面.webp', 'images/變暗2.webp',
-            'images/321.webp', 'images/修車廠.webp', 'images/mountain.webp', 'images/CAR_finish.webp',
-            'images/CAR_BACK.webp', 'images/CAR_finish2.webp', 'images/CAR_finish3.webp', 'images/感謝遊玩.webp', 'images/CAR_BACK2.webp',
-            'images/回到標題.webp', 'images/返回標題.webp', 'images/左轉場景.webp', 'images/右轉場景.webp', 'images/停止場景.webp'
-        ]; 
+            // ==============================
+            // 🏠 主遊戲 / 開場
+            // ==============================
+            'images/begin.webp',
+            'images/begin_font.webp',
+            'images/background.webp',
+            'images/background_long.webp',
+            'images/sun.webp',
+            'images/FLOWER.webp',
+            'images/fence.webp',
+            'images/house.webp',
+
+            // ==============================
+            // 🚗 車輛
+            // ==============================
+            'images/CAR.webp',
+            'images/CAR2.webp',
+            'images/CAR3.webp',
+            'images/CAR3_BACK.webp',
+            'images/CAR4.webp',
+            'images/CAR5.webp',
+            'images/CAR_FORWARD.webp',
+            'images/ANGRY_CAR.webp',
+            'images/CAR_BACK.webp',
+            'images/CAR_BACK2.webp',
+            'images/CAR_finish.webp',
+            'images/CAR_finish2.webp',
+            'images/CAR_finish3.webp',
+
+            // ==============================
+            // 🎬 場景
+            // ==============================
+            'images/左轉場景.webp',
+            'images/右轉場景.webp',
+            'images/停止場景.webp',
+            'images/修車廠.webp',
+            'images/mountain.webp',
+
+            // ==============================
+            // 🖼️ UI / 教學
+            // ==============================
+            'images/手勢示意圖.webp',
+            'images/標題畫面.webp',
+            'images/321.webp',
+            'images/感謝遊玩.webp',
+            'images/回到標題.webp',
+            'images/返回標題.webp',
+            'images/遊戲失敗.webp',
+
+            // ==============================
+            // ✨ 特效
+            // ==============================
+            'images/BOMB.webp',
+            'images/霧霧濾鏡.webp',
+            'images/變暗.webp',
+            'images/變暗2.webp'
+        ];
 
         function preloadAllAssets(urls) {
             const promises = urls.map(url => new Promise((resolve) => {
