@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>交通小遊戲 - normal.mp3 與事件音效整合版</title>
+    <title>交通小遊戲 - 極致效能輕量循環版</title>
     <style>
         /* 全域基礎設定 */
         body {
@@ -29,7 +29,7 @@
             background-color: #87ceeb;
             z-index: 1;
             transform: translate3d(0, 0, 0);
-            cursor: pointer; /* 提示使用者可點擊 */
+            cursor: pointer;
         }
 
         /* 2. 獨立鏡頭視窗 (320px * 240px) */
@@ -50,7 +50,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transform: scaleX(-1); /* 畫面水平鏡像 */
+            transform: scaleX(-1);
         }
         .ir2-status {
             position: absolute;
@@ -74,21 +74,25 @@
             width: 200px;
             height: auto;
             z-index: 9;
-            pointer-events: auto; /* 🛠️ 改為可點擊 */
+            pointer-events: auto;
             cursor: pointer;
-            display: none; /* 標題畫面預設隱藏，遊戲開始後顯示 */
+            display: none;
             filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.4));
         }
 
-        /* 遊戲內部視覺元件樣式 */
+        /* 🛠️ 核心優化：輕量化背景層，寬度保持 1000px，利用 CSS background-repeat 無限循環 */
         .bg-layer {
             position: absolute; top: 0; left: 0; width: 1000px; height: 400px;
             background-image: url('images/begin.webp'); background-size: 100% 100%; background-repeat: no-repeat;
-            z-index: 1; will-change: transform;
+            z-index: 1; will-change: background-position;
         }
         .bg-layer.long-mode {
-            width: 20000px; background-image: url('images/background.webp'); background-size: 1000px 100%; background-repeat: repeat-x;
+            width: 1000px; /* ⚡ 捨棄 20000px 大圖，改用 1000px 小圖無限循環貼圖 */
+            background-image: url('images/background.webp');
+            background-size: 1000px 100%;
+            background-repeat: repeat-x;
         }
+
         .static-sun { position: absolute; top: -62px; left: 98px; width: 172px; height: auto; z-index: 2; pointer-events: none; }
         .scenery-flower { position: absolute; width: 130px; height: auto; z-index: 2; pointer-events: none; }
         .flower-left { left: 380px; bottom: -50px; }
@@ -132,7 +136,7 @@
         .gesture-diagram { 
             width: 750px; 
             height: auto; 
-            margin-top: -350px; /* 固定貼合邊距 */
+            margin-top: -350px;
             border-radius: 8px; 
             filter: drop-shadow(0 4px 10px rgba(0,0,0,0.12)); 
         }
@@ -190,34 +194,28 @@
 
     <script>
         // ==========================================
-        // 🎵 音效與音樂物件管理 (整合 normal.mp3 與 event&begin.mp3)
+        // 🎵 音效與音樂物件管理
         // ==========================================
-        // 1. 標題音樂 (只有標題畫面會循環 replay)
         const audioTitle = new Audio('sound_effect/開頭音樂.mp3');
         audioTitle.loop = true;
         audioTitle.volume = 0.05; // 5% 音量
 
-        // 2. 開場起跑音樂 (單次播放)
         const audioBegin = new Audio('sound_effect/begin.mp3');
         audioBegin.loop = false;
         audioBegin.volume = 0.80; // 80% 音量
 
-        // 3. 321 倒數音效 (單次播放)
         const audioCountdown = new Audio('sound_effect/countdown.mp3');
         audioCountdown.loop = false;
         audioCountdown.volume = 0.20; // 20% 音量
 
-        // 4. 主地圖背景音樂 (單次播放，不自動 replay)
         const audioMainBgm = new Audio('sound_effect/event&begin.mp3');
         audioMainBgm.loop = false;
         audioMainBgm.volume = 0.05; // 5% 音量
 
-        // 5. 🛠️ 行駛背景音樂 normal.mp3 (10% 音量，循環播放)
         const audioNormalBgm = new Audio('sound_effect/normal.mp3');
         audioNormalBgm.loop = true;
         audioNormalBgm.volume = 0.10; // 10% 音量
 
-        // 6. 🛠️ 驚嘆號事件音效 event&begin.mp3 (5% 音量，與 begin 相同，單次播放)
         const audioEvent = new Audio('sound_effect/event&begin.mp3');
         audioEvent.loop = false;
         audioEvent.volume = 0.05; // 5% 音量
@@ -257,7 +255,6 @@
             }, stepTime);
         }
 
-        // 停止所有音訊
         function stopAllAudios() {
             [audioTitle, audioBegin, audioCountdown, audioNormalBgm, audioEvent].forEach(audio => {
                 audio.pause();
@@ -292,13 +289,14 @@
         let eventBook = [];
         let currentEventIndex = 0;
 
+        // 預載清單 (已完全切換為 background.webp 小圖)
         const assetsToPreload = [
             'images/begin.webp', 'images/background.webp', 'images/sun.webp', 'images/FLOWER.webp',
             'images/fence.webp', 'images/CAR.webp', 'images/CAR2.webp', 'images/驚嘆號.webp',
             'images/begin_font.webp', 'images/霧霧濾鏡.webp', 'images/標題畫面.webp', 'images/變暗2.webp',
             'images/321.webp', 'images/修車廠.webp', 'images/mountain.webp', 'images/CAR_finish.webp',
-            'images/CAR_BACK.webp', 'images/CAR_finish2.webp', 'images/CAR_finish3.webp', 'images/感謝遊玩.webp',"images/CAR_BACK2.webp",
-            'images/回到標題.webp', 'images/返回標題.webp', 'images/左轉場景.webp' ,'images/右轉場景.webp','images/停止場景.webp' ,'images/background_long.webp'  
+            'images/CAR_BACK.webp', 'images/CAR_finish2.webp', 'images/CAR_finish3.webp', 'images/感謝遊玩.webp', 'images/CAR_BACK2.webp',
+            'images/回到標題.webp', 'images/返回標題.webp', 'images/左轉場景.webp', 'images/右轉場景.webp', 'images/停止場景.webp'
         ]; 
 
         function preloadAllAssets(urls) {
@@ -313,7 +311,6 @@
             isAssetsLoaded = true;
             console.log("✅ 所有圖檔預載完成！");
         });
-        
 
         function getAvailableEventTypes() {
             return [
@@ -382,7 +379,6 @@
             console.log(`🎲 成功生成 ${eventCount} 個隨機事件簿：`, eventBook);
         }
 
-        // 🛠️ 遭遇事件：跳出驚嘆號 + 播放 event&begin.mp3 + 暫停 normal.mp3
         function spawnCar2AndTrigger(eventObj) {
             const car2 = document.createElement('img');
             car2.src = "images/CAR2.webp";
@@ -393,11 +389,9 @@
             playerCar.classList.add('dash-out');
             car2.classList.add('dash-out');
 
-            // 1. 同步播放 event&begin.mp3 (80% 音量)
             audioEvent.currentTime = 0;
             audioEvent.play().catch(err => console.warn("event 音效播放受阻:", err));
 
-            // 2. 暫停行駛背景音樂 normal.mp3
             audioNormalBgm.pause();
 
             setTimeout(() => {
@@ -414,7 +408,7 @@
                     hintImg.src = 'images/返回標題.webp';
                     hintImg.className = 'restart-hint';
                     hintImg.style.display = 'block';
-                    hintImg.onclick = () => { resetToGameInitialView(); }; // 支援點擊返回標題
+                    hintImg.onclick = () => { resetToGameInitialView(); };
                     viewport.appendChild(hintImg);
 
                     eventObj.render(viewport, (isSuccess) => {
@@ -426,12 +420,12 @@
             }, 2000);
         }
 
-        // 🛠️ 從其他 JS 關卡返回 index 繼續行駛：恢復播放 normal.mp3
+        // 🛠️ 回到主地圖：透過 backgroundPosition 延續背景位置
         function restoreMainDriveView() {
             if (currentEventIndex >= eventBook.length) {
                 playDarkTransition(() => {
                     viewport.innerHTML = `
-                        <div id="bgLayer" class="bg-layer long-mode" style="transform: translateX(-${cameraX}px);"></div>
+                        <div id="bgLayer" class="bg-layer long-mode" style="background-position: -${cameraX}px 0px;"></div>
                         <img src="images/sun.webp" class="static-sun" alt="太陽">
                         <img src="images/CAR.webp" id="playerCar" class="player-car" style="transform: translateX(315px);" alt="紅車">
                         <img src="images/返回標題.webp" id="restartHint" class="restart-hint" style="display: block;" alt="返回標題提示">
@@ -443,14 +437,13 @@
                     if (restartHint) restartHint.onclick = () => { resetToGameInitialView(); };
                     isDriving = true;
 
-                    // 繼續播放 normal.mp3
                     audioNormalBgm.play().catch(err => console.warn("normal 音樂恢復受阻:", err));
 
                     requestAnimationFrame(gameLoop);
 
                     setTimeout(() => {
                         isDriving = false;
-                        audioNormalBgm.pause(); // 進入結局前暫停
+                        audioNormalBgm.pause();
                         playDarkTransition(() => {
                             viewport.innerHTML = '';
                             if (typeof renderEndScene === 'function') {
@@ -465,7 +458,7 @@
 
             playDarkTransition(() => {
                 viewport.innerHTML = `
-                    <div id="bgLayer" class="bg-layer long-mode" style="transform: translateX(-${cameraX}px);"></div>
+                    <div id="bgLayer" class="bg-layer long-mode" style="background-position: -${cameraX}px 0px;"></div>
                     <img src="images/sun.webp" class="static-sun" alt="太陽">
                     <img src="images/CAR.webp" id="playerCar" class="player-car" style="transform: translateX(315px);" alt="紅車">
                     <img src="images/驚嘆號.webp" id="exclamationMark" class="exclamation-mark" alt="驚嘆號">
@@ -480,17 +473,15 @@
                 cameraX += 1000;
                 isDriving = true;
 
-                // 繼續播放 normal.mp3
                 audioNormalBgm.play().catch(err => console.warn("normal 音樂恢復受阻:", err));
 
                 requestAnimationFrame(gameLoop);
             });
         }
 
-        // 重置回到標題畫面
         function resetToGameInitialView() {
             stopAllAudios();
-            playTitleMusic(); // 回到標題畫面時重新播放開頭音樂
+            playTitleMusic();
 
             playDarkTransition(() => {
                 gameStarted = false;
@@ -531,6 +522,7 @@
             });
         }
 
+        // 🛠️ 核心效能升級：移動貼圖 backgroundPosition，不擴大 DOM 尺寸
         function gameLoop(timestamp) {
             if (!lastTime) lastTime = timestamp;
             const delta = (timestamp - lastTime) / 1000;
@@ -539,7 +531,10 @@
             if (isDriving) {
                 cameraX += scrollSpeed * delta;
                 const activeBg = document.getElementById('bgLayer');
-                if (activeBg) { activeBg.style.transform = `translateX(-${cameraX}px)`; }
+                if (activeBg) { 
+                    // ⚡ 高效能貼圖偏移，手機完全零負擔！
+                    activeBg.style.backgroundPosition = `-${cameraX}px 0px`; 
+                }
 
                 if (currentEventIndex < eventBook.length) {
                     const nextEvent = eventBook[currentEventIndex];
@@ -565,11 +560,12 @@
             }, 250); 
         }
 
-        // 🛠️ 離開 begin 場景進入長地圖：啟動 normal.mp3 循環播放
         function handleDriveThroughEnd(e) {
             if (e.animationName === 'driveThrough') {
                 playDarkTransition(() => {
                     bgLayer.classList.add('long-mode');
+                    bgLayer.style.backgroundPosition = `-${cameraX}px 0px`;
+
                     if (flowerLeft) flowerLeft.style.display = 'none';
                     if (flowerRight) flowerRight.style.display = 'none';
                     if (fence) fence.style.display = 'none';
@@ -581,7 +577,6 @@
                     generateRandomEventBook();
                     isDriving = true;
 
-                    // 🛠️ 開始循環播放 normal.mp3 (10% 音量)
                     audioNormalBgm.currentTime = 0;
                     audioNormalBgm.play().catch(err => console.warn("normal 音樂播放受阻:", err));
 
@@ -590,16 +585,13 @@
             }
         }
 
-        // 🛠️ 封裝開始遊戲核心流程 (支援鍵盤 Enter 與滑鼠/手機觸控點擊)
         function startGameFlow() {
             if (!isAssetsLoaded || gameStarted) return;
 
             gameStarted = true;
 
-            // 開頭音樂淡出並停止
             fadeOutAudio(audioTitle, 500);
 
-            // 立即播放 begin.mp3 (80% 音量)
             audioBegin.currentTime = 0;
             audioBegin.play().catch(err => console.warn("begin 音樂播放受阻:", err));
 
@@ -609,26 +601,20 @@
 
             if (restartHint) restartHint.style.display = 'block';
 
-            // 純背景靜止停留在畫面上 0.5 秒 (500ms)，主角車此時不進場
             setTimeout(() => {
-                // 0.5 秒後：播放 countdown.mp3 (20% 音量)
                 audioCountdown.currentTime = 0;
                 audioCountdown.play().catch(err => console.warn("countdown 音效播放受阻:", err));
 
-                // 0.5 秒後：呈現 321 倒數動圖
                 titleBanner.style.display = 'block';
                 titleBanner.src = 'images/321.webp?t=' + Date.now();
                 titleBanner.classList.add('countdown');
 
-                // 給予 321.webp 完整 2900ms 的播放時間，保證不被截斷
                 setTimeout(() => {
                     titleBanner.style.display = 'none';
 
-                    // 主角紅車與出發標語啟動出發
                     playerCar.classList.add('active');
                     startBanner.classList.add('active');
 
-                    // 緊接著播放 event&begin.mp3 (5% 音量，單次播放)
                     audioMainBgm.currentTime = 0;
                     audioMainBgm.play().catch(err => console.warn("event&begin 音樂播放受阻:", err));
                 }, 2900);
@@ -636,7 +622,6 @@
             }, 500);
         }
 
-        // 1. 鍵盤監聽事件：Enter 開始遊戲、R 鍵隨時返回標題
         window.addEventListener('keydown', function(e) {
             if ((e.key === 'r' || e.key === 'R') && gameStarted) {
                 console.log("🔄 [手動重置] 收到 R 鍵，返回標題畫面！");
@@ -649,7 +634,6 @@
             }
         });
 
-        // 2. 🛠️ 行動裝置與滑鼠點擊支援：點擊視窗即可開始遊戲
         viewport.addEventListener('click', function(e) {
             if (!gameStarted) {
                 console.log("📱 [觸控/點擊] 觸發開始遊戲流程！");
@@ -657,7 +641,6 @@
             }
         });
 
-        // 3. 🛠️ 右上角返回按鈕綁定點擊事件
         if (restartHint) {
             restartHint.onclick = function() {
                 console.log("📱 [點擊返回圖示] 返回標題畫面！");
