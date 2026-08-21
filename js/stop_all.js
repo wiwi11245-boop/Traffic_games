@@ -23,7 +23,7 @@ function renderStopScene(container, onSceneComplete) {
         style.textContent = `
             .scene-stop-bg {
                 position: absolute; top: 0; left: 0; width: 1000px; height: 400px;
-                background-image: url('images/停止場景.png');
+                background-image: url('images/停止場景.webp');
                 background-size: 100% 100%; background-repeat: no-repeat; z-index: 1;
             }
             .stop-sun {
@@ -184,12 +184,12 @@ function renderStopScene(container, onSceneComplete) {
         <img src="images/CAR.webp" class="stop-player-car" alt="紅車主角">
         <img src="images/CAR2.webp" class="stop-blue-car" alt="藍車後車">
         <div class="car3-event-group">
-            <img src="images/CAR3.png" class="car3-side" alt="CAR3">
-            <img src="images/CAR4.png" class="car3-side2" alt="CAR4">
+            <img src="images/CAR3.webp" class="car3-side" alt="CAR3">
+            <img src="images/CAR4.webp" class="car3-side2" alt="CAR4">
             <img src="images/CAR3_BACK.webp" class="car3-back" alt="CAR3_BACK">
         </div>
-        <img src="images/house.png" class="top-house house-1" alt="房屋A">
-        <img src="images/house.png" class="top-house house-2" alt="房屋B">
+        <img src="images/house.webp" class="top-house house-1" alt="房屋A">
+        <img src="images/house.webp" class="top-house house-2" alt="房屋B">
         <img src="images/321.webp" id="stopCountdownImg" class="stop-countdown-overlay" alt="321倒數">
     `;
 
@@ -264,13 +264,13 @@ function renderInternalStopSuccess(container) {
         <img src="images/CAR.webp" class="stop-success-player-car" alt="紅車主角">
         <img src="images/CAR2.webp" class="stop-success-blue-car" alt="藍車後車">
         <div class="car3-event-group">
-            <img src="images/CAR3.png" class="car3-side" style="animation: car3SidesFade 6s linear forwards;" alt="CAR3">
-            <img src="images/CAR4.png" class="car3-side2" style="animation: car3SidesFade 6s linear forwards;" alt="CAR4">
+            <img src="images/CAR3.webp" class="car3-side" style="animation: car3SidesFade 6s linear forwards;" alt="CAR3">
+            <img src="images/CAR4.webp" class="car3-side2" style="animation: car3SidesFade 6s linear forwards;" alt="CAR4">
             <img src="images/CAR3_BACK.webp" class="car3-back" style="animation: car3BackFade 6s linear forwards;" alt="CAR3_BACK">
         </div>
-        <img src="images/CAR5.png" class="car5-parked" alt="CAR5">
-        <img src="images/house.png" class="top-house house-1" alt="房屋A">
-        <img src="images/house.png" class="top-house house-2" alt="房屋B">
+        <img src="images/CAR5.webp" class="car5-parked" alt="CAR5">
+        <img src="images/house.webp" class="top-house house-1" alt="房屋A">
+        <img src="images/house.webp" class="top-house house-2" alt="房屋B">
     `;
 }
 
@@ -281,14 +281,14 @@ function renderInternalStopFail(container) {
         <img src="images/CAR.webp" class="stop-fail-player-car" alt="紅車主角">
         <img src="images/CAR2.webp" class="stop-fail-blue-car" alt="藍車後車">
         <div class="car3-event-group">
-            <img src="images/CAR3.png" class="car3-side" alt="CAR3">
-            <img src="images/CAR4.png" class="car3-side2" alt="CAR4">
+            <img src="images/CAR3.webp" class="car3-side" alt="CAR3">
+            <img src="images/CAR4.webp" class="car3-side2" alt="CAR4">
             <img src="images/CAR3_BACK.webp" class="car3-back" alt="CAR3_BACK">
         </div>
-        <img src="images/house.png" class="top-house house-1" alt="房屋A">
-        <img src="images/house.png" class="top-house house-2" alt="房屋B">
+        <img src="images/house.webp" class="top-house house-1" alt="房屋A">
+        <img src="images/house.webp" class="top-house house-2" alt="房屋B">
         <img id="stopFailBomb" class="stop-fail-bomb" alt="爆炸特效">
-        <img src="images/遊戲失敗.png" class="stop-fail-banner" alt="遊戲失敗標題">
+        <img src="images/遊戲失敗.webp" class="stop-fail-banner" alt="遊戲失敗標題">
     `;
 
     // 🎵 宣告爆炸音效 (20% 音量)

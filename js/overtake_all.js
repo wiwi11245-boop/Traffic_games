@@ -27,7 +27,7 @@ function renderOvertakeScene(container, onSceneComplete) {
             /* 基礎上半段背景 */
             .scene-overtake-bg {
                 position: absolute; top: 0; left: 0; width: 3000px; height: 400px;
-                background-image: url('images/background.png');
+                background-image: url('images/background.webp');
                 background-size: auto 100%; background-repeat: repeat-x; z-index: 1;
                 animation: scrollBgTransform 5s linear infinite; will-change: transform;
             }
@@ -83,7 +83,7 @@ function renderOvertakeScene(container, onSceneComplete) {
             /* 成功下半段背景與車輛動畫 */
             .scene-overtake-success-bg {
                 position: absolute; top: 0; left: 0; width: 3000px; height: 400px;
-                background-image: url('images/background.png');
+                background-image: url('images/background.webp');
                 background-size: auto 100%; background-repeat: repeat-x; z-index: 1;
                 animation: scrollBgOvertakeSuccess 5s linear infinite; will-change: transform;
             }
@@ -130,7 +130,7 @@ function renderOvertakeScene(container, onSceneComplete) {
             /* 失敗下半段背景與撞車動畫 */
             .scene-overtake-fail-bg {
                 position: absolute; top: 0; left: 0; width: 3000px; height: 400px;
-                background-image: url('images/background.png');
+                background-image: url('images/background.webp');
                 background-size: auto 100%; background-repeat: repeat-x; z-index: 1;
                 animation: scrollBgOvertakeCrash 7s linear forwards; will-change: transform;
             }
@@ -292,7 +292,7 @@ function renderInternalOvertakeFail(container) {
         <img src="images/CAR.webp" class="overtake-fail-player-car" alt="紅車主角">
         <img src="images/CAR2.webp" class="overtake-fail-opposite-car" alt="對向車">
         <img id="overtakeFailBomb" class="overtake-fail-bomb" alt="爆炸特效">
-        <img src="images/遊戲失敗.png" class="overtake-fail-banner" alt="遊戲失敗標題">
+        <img src="images/遊戲失敗.webp" class="overtake-fail-banner" alt="遊戲失敗標題">
     `;
 
     // 🎵 宣告爆炸音效 (20% 音量)

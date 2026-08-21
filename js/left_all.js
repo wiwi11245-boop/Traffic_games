@@ -23,7 +23,7 @@ function renderLeftScene(container, onSceneComplete) {
         style.textContent = `
             .scene-left-bg {
                 position: absolute; top: 0; left: 0; width: 1000px; height: 400px;
-                background-image: url('images/左轉場景.png');
+                background-image: url('images/左轉場景.webp');
                 background-size: 100% 100%; background-repeat: no-repeat; z-index: 1;
             }
             .left-sun { position: absolute; top: -62px; left: 98px; width: 172px; height: auto; z-index: 2; pointer-events: none; }
@@ -252,7 +252,7 @@ function renderInternalLeftFail(container) {
         <img id="leftFailBomb" class="left-fail-bomb" alt="爆炸">
         <img src="images/CAR.webp" class="left-fail-player-car" alt="紅車">
         <img src="images/CAR2.webp" class="left-blue-car left-fail-blue-car" alt="藍車">
-        <img src="images/遊戲失敗.png" class="left-fail-banner" alt="失敗">
+        <img src="images/遊戲失敗.webp" class="left-fail-banner" alt="失敗">
     `;
 
     // 🎵 宣告爆炸音效 (20% 音量)

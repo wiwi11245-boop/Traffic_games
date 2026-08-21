@@ -23,7 +23,7 @@ function renderRightScene(container, onSceneComplete) {
         style.textContent = `
             .scene-right-bg {
                 position: absolute; top: 0; left: 0; width: 1000px; height: 400px;
-                background-image: url('images/右轉場景.png');
+                background-image: url('images/右轉場景.webp');
                 background-size: 100% 100%; background-repeat: no-repeat; z-index: 1;
             }
             .right-sun { position: absolute; top: -62px; left: 98px; width: 172px; height: auto; z-index: 2; pointer-events: none; }
@@ -258,7 +258,7 @@ function renderInternalRightFail(container) {
         <img id="rightFailBomb" class="right-fail-bomb" alt="爆炸特效">
         <img src="images/CAR.webp" class="right-fail-player-car" alt="紅車主角">
         <img src="images/CAR2.webp" class="right-blue-car right-fail-blue-car" alt="藍車追撞">
-        <img src="images/遊戲失敗.png" class="right-fail-banner" alt="遊戲失敗標題">
+        <img src="images/遊戲失敗.webp" class="right-fail-banner" alt="遊戲失敗標題">
     `;
 
     // 🎵 宣告爆炸音效 (20% 音量)

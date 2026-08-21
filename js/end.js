@@ -1,4 +1,4 @@
-// 🛠️ 完整動態版 end.js：整合 end.mp3(5%)、感謝遊玩時序切換 結局音樂.mp3(5%, loop)
+// 🛠️ 修正版 end.js：修復 CSS url 單引號語法錯誤，支援 webp 與完整音效時序
 
 function renderEndScene(container, onReturnToTitle) {
     let canReturnToTitle = false;
@@ -22,7 +22,7 @@ function renderEndScene(container, onReturnToTitle) {
         style.textContent = `
             .scene-end-viewport {
                 position: absolute; top: 0; left: 0; width: 1000px; height: 400px;
-                background-image: url('images/修車廠.png');
+                background-image: url('images/修車廠.webp'); /* 🛠️ 已補回結尾單引號 */
                 background-size: 100% 100%; background-repeat: no-repeat; z-index: 1;
                 transform: translate3d(0, 0, 0); /* 開啟 GPU 合成圖層 */
             }
@@ -71,7 +71,7 @@ function renderEndScene(container, onReturnToTitle) {
 
             .foreground-mountain {
                 position: absolute; width: 1000px; height: 400px; bottom: 17px; left: 0;
-                background-image: url('images/mountain.png'); background-size: contain;
+                background-image: url('images/mountain.webp'); background-size: contain;
                 background-position: center; background-repeat: no-repeat; z-index: 3; pointer-events: none;
             }
 
@@ -91,14 +91,14 @@ function renderEndScene(container, onReturnToTitle) {
                ⚡ 時間軸 Keyframes (12s 總時長)
                ========================================== */
 
-            /* 影格一 (CAR_finish.png)：流暢快速駛入，於 35% 停下 */
+            /* 影格一 (CAR_finish.webp)：流暢快速駛入，於 35% 停下 */
             @keyframes parkStage1Gpu {
                 0% { transform: translate3d(-250px, 0, 0); opacity: 1; }
                 35% { transform: translate3d(800px, 0, 0); opacity: 1; }
                 36%, 100% { transform: translate3d(800px, 0, 0); opacity: 0; }
             }
 
-            /* 影格二 (CAR_BACK.png)：36%~46% 順暢轉向倒車 */
+            /* 影格二 (CAR_BACK2.webp)：36%~46% 順暢轉向倒車 */
             @keyframes parkStage2Gpu {
                 0%, 35% { opacity: 0; transform: translate3d(900px, -70px, 0); }
                 36% { opacity: 1; transform: translate3d(900px, -60px, 0); }
@@ -106,14 +106,14 @@ function renderEndScene(container, onReturnToTitle) {
                 46%, 100% { opacity: 0; transform: translate3d(900px, -90px, 0); }
             }
 
-            /* 影格三 (CAR_finish2.png)：47%~55% 開燈停妥 */
+            /* 影格三 (CAR_finish2.webp)：47%~55% 開燈停妥 */
             @keyframes parkStage3Gpu {
                 0%, 46% { opacity: 0; transform: translate3d(770px, -160px, 0); }
                 47%, 54% { opacity: 1; transform: translate3d(770px, -160px, 0); }
                 55%, 100% { opacity: 0; transform: translate3d(770px, -160px, 0); }
             }
 
-            /* 影格四 (CAR_finish3.png)：55% 熄燈並持續定格 */
+            /* 影格四 (CAR_finish3.webp)：55% 熄燈並持續定格 */
             @keyframes parkStage4Gpu {
                 0%, 54% { opacity: 0; transform: translate3d(843px, -160px, 0); }
                 55%, 100% { opacity: 1; transform: translate3d(843px, -160px, 0); }
@@ -162,18 +162,18 @@ function renderEndScene(container, onReturnToTitle) {
     container.innerHTML = `
         <div class="scene-end-viewport">
             <img src="images/sun.webp" class="setting-sun" alt="落日太陽">
-            <img src="images/CAR_finish.png" class="car-frame1" alt="第一影格主角車">
-            <img src="images/CAR_BACK.png" class="car-frame2" alt="第二影格後視車">
-            <img src="images/CAR_finish2.png" class="car-frame3" alt="第三影格停妥車">
-            <img src="images/CAR_finish3.png" class="car-frame4" alt="第四影格熄燈車">
+            <img src="images/CAR_finish.webp" class="car-frame1" alt="第一影格主角車">
+            <img src="images/CAR_BACK2.webp" class="car-frame2" alt="第二影格後視車">
+            <img src="images/CAR_finish2.webp" class="car-frame3" alt="第三影格停妥車">
+            <img src="images/CAR_finish3.webp" class="car-frame4" alt="第四影格熄燈車">
             <div class="dark-overlay"></div>
             <div class="foreground-mountain"></div>
-            <img src="images/感謝遊玩.png" class="thanks-banner" alt="感謝遊玩標題">
-            <img src="images/回到標題.png" id="returnTitleImg" class="return-title-banner" alt="按ENTER鍵回到標題">
+            <img src="images/感謝遊玩.webp" class="thanks-banner" alt="感謝遊玩標題">
+            <img src="images/回到標題.webp" id="returnTitleImg" class="return-title-banner" alt="按ENTER鍵回到標題">
         </div>
     `;
 
-    // 2. 於 8400ms（70% 感謝遊玩.png 出現時）切換播放 結局音樂.mp3
+    // 2. 於 8400ms（70% 感謝遊玩.webp 出現時）切換播放 結局音樂.mp3
     setTimeout(() => {
         audioEnd.pause();
         audioEndingTheme.currentTime = 0;

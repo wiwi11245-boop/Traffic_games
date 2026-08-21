@@ -81,18 +81,18 @@
         /* 遊戲內部視覺元件樣式 */
         .bg-layer {
             position: absolute; top: 0; left: 0; width: 1000px; height: 400px;
-            background-image: url('images/begin.png'); background-size: 100% 100%; background-repeat: no-repeat;
+            background-image: url('images/begin.webp'); background-size: 100% 100%; background-repeat: no-repeat;
             z-index: 1; will-change: transform;
         }
         .bg-layer.long-mode {
-            width: 20000px; background-image: url('images/background.png'); background-size: 1000px 100%; background-repeat: repeat-x;
+            width: 20000px; background-image: url('images/background.webp'); background-size: 1000px 100%; background-repeat: repeat-x;
         }
         .static-sun { position: absolute; top: -62px; left: 98px; width: 172px; height: auto; z-index: 2; pointer-events: none; }
         .scenery-flower { position: absolute; width: 130px; height: auto; z-index: 2; pointer-events: none; }
         .flower-left { left: 380px; bottom: -50px; }
         .flower-right { right: 180px; bottom: -50px; }
-        .foreground-fence { position: absolute; width: 225px; height: 88px; left: 145px; bottom: 30px; background-image: url('images/fence.png'); background-size: contain; background-position: center; background-repeat: no-repeat; z-index: 6; pointer-events: none; }
-        .fog-filter { position: absolute; width: 100%; height: 100%; left: 0; top: 0; background-image: url('images/霧霧濾鏡.png'); background-size: 100% 100%; opacity: 0.65; z-index: 6; pointer-events: none; transition: opacity 0.5s ease; }
+        .foreground-fence { position: absolute; width: 225px; height: 88px; left: 145px; bottom: 30px; background-image: url('images/fence.webp'); background-size: contain; background-position: center; background-repeat: no-repeat; z-index: 6; pointer-events: none; }
+        .fog-filter { position: absolute; width: 100%; height: 100%; left: 0; top: 0; background-image: url('images/霧霧濾鏡.webp'); background-size: 100% 100%; opacity: 0.65; z-index: 6; pointer-events: none; transition: opacity 0.5s ease; }
         .player-car { position: absolute; width: 160px; height: auto; bottom: -5px; left: 0; transform: translate3d(-350px, 0, 0); z-index: 5; will-change: transform; }
         .player-car.active { animation: driveThrough 5s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
         @keyframes driveThrough { 0% { transform: translate3d(-350px, 0, 0); } 30% { transform: translate3d(100px, 0, 0); } 100% { transform: translate3d(1050px, 0, 0); } }
@@ -157,13 +157,13 @@
         <img src="images/FLOWER.webp" id="flowerRight" class="scenery-flower flower-right" alt="花朵">
         <div id="fence" class="foreground-fence"></div>
         <img src="images/CAR.webp" id="playerCar" class="player-car" alt="紅車">
-        <img src="images/驚嘆號.png" id="exclamationMark" class="exclamation-mark" alt="驚嘆號">
-        <img src="images/begin_font.png" id="startBanner" class="start-banner" alt="開始">
+        <img src="images/驚嘆號.webp" id="exclamationMark" class="exclamation-mark" alt="驚嘆號">
+        <img src="images/begin_font.webp" id="startBanner" class="start-banner" alt="開始">
         <div id="fogFilter" class="fog-filter"></div>
-        <img src="images/標題畫面.png" id="titleBanner" class="title-banner" alt="按ENTER鍵進入遊戲">
+        <img src="images/標題畫面.webp" id="titleBanner" class="title-banner" alt="按ENTER鍵進入遊戲">
         
         <!-- 右上角返回標題提示圖片 -->
-        <img src="images/返回標題.png" id="restartHint" class="restart-hint" alt="按下R鍵可返回標題">
+        <img src="images/返回標題.webp" id="restartHint" class="restart-hint" alt="按下R鍵可返回標題">
 
         <img id="transitionOverlay" class="transition-overlay" alt="變暗轉場">
     </div>
@@ -183,7 +183,7 @@
                 操作者必須前往修車廠進行維修。在抵達之前，只能透過駕駛人手勢向後方車輛表達行駛意圖，避免發生交通事故。快一起安全抵達修車廠吧！
             </p>
         </div>
-        <img src="images/手勢示意圖.png" class="gesture-diagram" alt="駕駛手勢示意圖">
+        <img src="images/手勢示意圖.webp" class="gesture-diagram" alt="駕駛手勢示意圖">
     </div>
 
     <script>
@@ -289,13 +289,13 @@
         let currentEventIndex = 0;
 
         const assetsToPreload = [
-            'images/begin.png', 'images/background.png', 'images/sun.webp', 'images/FLOWER.webp',
-            'images/fence.png', 'images/CAR.webp', 'images/CAR2.webp', 'images/驚嘆號.png',
-            'images/begin_font.png', 'images/霧霧濾鏡.png', 'images/標題畫面.png', 'images/變暗2.webp',
-            'images/321.webp', 'images/修車廠.png', 'images/mountain.png', 'images/CAR_finish.png',
-            'images/CAR_BACK.png', 'images/CAR_finish2.png', 'images/CAR_finish3.png', 'images/感謝遊玩.png',
-            'images/回到標題.png', 'images/返回標題.png'
-        ];
+            'images/begin.webp', 'images/background.webp', 'images/sun.webp', 'images/FLOWER.webp',
+            'images/fence.webp', 'images/CAR.webp', 'images/CAR2.webp', 'images/驚嘆號.webp',
+            'images/begin_font.webp', 'images/霧霧濾鏡.webp', 'images/標題畫面.webp', 'images/變暗2.webp',
+            'images/321.webp', 'images/修車廠.webp', 'images/mountain.webp', 'images/CAR_finish.webp',
+            'images/CAR_BACK.webp', 'images/CAR_finish2.webp', 'images/CAR_finish3.webp', 'images/感謝遊玩.webp',"images/CAR_BACK2.webp",
+            'images/回到標題.webp', 'images/返回標題.webp', 'images/左轉場景.webp' ,'images/右轉場景.webp','images/停止場景.webp' ,'images/background_long.webp'  
+        ]; 
 
         function preloadAllAssets(urls) {
             const promises = urls.map(url => new Promise((resolve) => {
@@ -309,6 +309,7 @@
             isAssetsLoaded = true;
             console.log("✅ 所有圖檔預載完成！");
         });
+        
 
         function getAvailableEventTypes() {
             return [
@@ -406,7 +407,7 @@
                     viewport.innerHTML = '';
 
                     const hintImg = document.createElement('img');
-                    hintImg.src = 'images/返回標題.png';
+                    hintImg.src = 'images/返回標題.webp';
                     hintImg.className = 'restart-hint';
                     hintImg.style.display = 'block';
                     viewport.appendChild(hintImg);
@@ -428,7 +429,7 @@
                         <div id="bgLayer" class="bg-layer long-mode" style="transform: translateX(-${cameraX}px);"></div>
                         <img src="images/sun.webp" class="static-sun" alt="太陽">
                         <img src="images/CAR.webp" id="playerCar" class="player-car" style="transform: translateX(315px);" alt="紅車">
-                        <img src="images/返回標題.png" id="restartHint" class="restart-hint" style="display: block;" alt="返回標題提示">
+                        <img src="images/返回標題.webp" id="restartHint" class="restart-hint" style="display: block;" alt="返回標題提示">
                         <img id="transitionOverlay" class="transition-overlay" alt="變暗轉場">
                     `;
 
@@ -461,8 +462,8 @@
                     <div id="bgLayer" class="bg-layer long-mode" style="transform: translateX(-${cameraX}px);"></div>
                     <img src="images/sun.webp" class="static-sun" alt="太陽">
                     <img src="images/CAR.webp" id="playerCar" class="player-car" style="transform: translateX(315px);" alt="紅車">
-                    <img src="images/驚嘆號.png" id="exclamationMark" class="exclamation-mark" alt="驚嘆號">
-                    <img src="images/返回標題.png" id="restartHint" class="restart-hint" style="display: block;" alt="返回標題提示">
+                    <img src="images/驚嘆號.webp" id="exclamationMark" class="exclamation-mark" alt="驚嘆號">
+                    <img src="images/返回標題.webp" id="restartHint" class="restart-hint" style="display: block;" alt="返回標題提示">
                     <img id="transitionOverlay" class="transition-overlay" alt="變暗轉場">
                 `;
 
@@ -498,11 +499,11 @@
                     <img src="images/FLOWER.webp" id="flowerRight" class="scenery-flower flower-right" alt="花朵">
                     <div id="fence" class="foreground-fence"></div>
                     <img src="images/CAR.webp" id="playerCar" class="player-car" alt="紅車">
-                    <img src="images/驚嘆號.png" id="exclamationMark" class="exclamation-mark" alt="驚嘆號">
-                    <img src="images/begin_font.png" id="startBanner" class="start-banner" alt="開始">
+                    <img src="images/驚嘆號.webp" id="exclamationMark" class="exclamation-mark" alt="驚嘆號">
+                    <img src="images/begin_font.webp" id="startBanner" class="start-banner" alt="開始">
                     <div id="fogFilter" class="fog-filter" style="opacity: 0.65; display: block;"></div>
-                    <img src="images/標題畫面.png" id="titleBanner" class="title-banner" alt="按ENTER鍵進入遊戲">
-                    <img src="images/返回標題.png" id="restartHint" class="restart-hint" alt="按下R鍵可返回標題">
+                    <img src="images/標題畫面.webp" id="titleBanner" class="title-banner" alt="按ENTER鍵進入遊戲">
+                    <img src="images/返回標題.webp" id="restartHint" class="restart-hint" alt="按下R鍵可返回標題">
                     <img id="transitionOverlay" class="transition-overlay" alt="變暗轉場">
                 `;
 
