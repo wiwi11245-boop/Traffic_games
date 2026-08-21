@@ -1,4 +1,4 @@
-// 🛠️ 完整動態整合版 stop_all.js：精確對齊 3080ms 追撞時間軸、BOMB 動圖完整播放、成功/失敗全音效整合
+// 🛠️ 完整動態整合版 stop_all.js：整合 rAF 渲染同步防搶跑、.webp 支援、2300ms 撞擊、3400ms 緩停音效
 
 function renderStopScene(container, onSceneComplete) {
     let hasCorrectInput = false;
@@ -206,55 +206,61 @@ function renderStopScene(container, onSceneComplete) {
     window.addEventListener('gestureDetected', onGestureEvent);
     window.addEventListener('keydown', onKeyDownEvent);
 
-    setTimeout(() => {
-        const countdownImg = document.getElementById('stopCountdownImg');
-        if (countdownImg) {
-            countdownImg.style.display = 'block';
-            countdownImg.src = 'images/321.webp?t=' + Date.now();
-
-            // 🎵 播放 tiktok.mp3 倒數音效 (15% 音量)
-            sfxCountdown.currentTime = 0;
-            sfxCountdown.play().catch(err => console.warn("tiktok 音效播放受阻:", err));
-
+    // 🛠️ 雙重 rAF 確保畫面渲染就緒後再開始計時，徹底防止搶跑
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
             setTimeout(() => {
-                if (countdownImg) countdownImg.style.display = 'none';
-            }, 2800);
-        }
+                const countdownImg = document.getElementById('stopCountdownImg');
+                if (countdownImg) {
+                    countdownImg.style.display = 'block';
+                    countdownImg.src = 'images/321.webp?t=' + Date.now();
 
-        isJudgmentActive = true;
+                    // 🎵 播放 tiktok.mp3 倒數音效 (15% 音量)
+                    sfxCountdown.currentTime = 0;
+                    sfxCountdown.play().catch(err => console.warn("tiktok 音效播放受阻:", err));
 
-        setTimeout(() => {
-            isJudgmentActive = false;
-            window.removeEventListener('gestureDetected', onGestureEvent);
-            window.removeEventListener('keydown', onKeyDownEvent);
-            if (countdownImg) countdownImg.style.display = 'none';
+                    setTimeout(() => {
+                        if (countdownImg) countdownImg.style.display = 'none';
+                    }, 2800);
+                }
 
-            if (hasCorrectInput) {
-                console.log("[緩停關卡] 🎉 通關成功！");
-                
-                // 🎵 1. 即刻播放通關音效 success.mp3 (20%)
-                sfxSuccess.currentTime = 0;
-                sfxSuccess.play().catch(err => console.warn("success 音效播放受阻:", err));
+                isJudgmentActive = true;
 
-                // 🎵 2. 等待緩停結束起步 (6s 的 60% = 3600ms) 後，再播放 event&begin.mp3
                 setTimeout(() => {
-                    sfxSuccessEvent.currentTime = 0;
-                    sfxSuccessEvent.play().catch(err => console.warn("event&begin 音效播放受阻:", err));
-                }, 3400);
+                    isJudgmentActive = false;
+                    window.removeEventListener('gestureDetected', onGestureEvent);
+                    window.removeEventListener('keydown', onKeyDownEvent);
+                    if (countdownImg) countdownImg.style.display = 'none';
 
-                renderInternalStopSuccess(container);
-                setTimeout(() => { if (typeof onSceneComplete === 'function') onSceneComplete(true); }, 6000);
-            } else {
-                console.log("[緩停關卡] ❌ 辨識失敗！");
-                // 🎵 播放失敗音效
-                sfxLoss.currentTime = 0;
-                sfxLoss.play().catch(err => console.warn("loss 音效播放受阻:", err));
+                    if (hasCorrectInput) {
+                        console.log("[緩停關卡] 🎉 通關成功！");
+                        
+                        // 🎵 1. 即刻播放通關音效 success.mp3 (20%)
+                        sfxSuccess.currentTime = 0;
+                        sfxSuccess.play().catch(err => console.warn("success 音效播放受阻:", err));
 
-                renderInternalStopFail(container);
-                setTimeout(() => { if (typeof onSceneComplete === 'function') onSceneComplete(false); }, 7000);
-            }
-        }, 4000);
-    }, 500);
+                        // 🎵 2. 等待緩停結束起步後播放 event&begin.mp3 (3400ms)
+                        setTimeout(() => {
+                            sfxSuccessEvent.currentTime = 0;
+                            sfxSuccessEvent.play().catch(err => console.warn("event&begin 音效播放受阻:", err));
+                        }, 3400);
+
+                        renderInternalStopSuccess(container);
+                        setTimeout(() => { if (typeof onSceneComplete === 'function') onSceneComplete(true); }, 6000);
+                    } else {
+                        console.log("[緩停關卡] ❌ 辨識失敗！");
+                        // 🎵 播放失敗音效
+                        sfxLoss.currentTime = 0;
+                        sfxLoss.play().catch(err => console.warn("loss 音效播放受阻:", err));
+
+                        renderInternalStopFail(container);
+                        setTimeout(() => { if (typeof onSceneComplete === 'function') onSceneComplete(false); }, 7000);
+                    }
+                }, 4000);
+
+            }, 600); // 留給轉場完全拉開的穩定時間
+        });
+    });
 }
 
 function renderInternalStopSuccess(container) {
@@ -295,7 +301,7 @@ function renderInternalStopFail(container) {
     const sfxCrash = new Audio('sound_effect/crash.mp3');
     sfxCrash.volume = 0.20;
 
-    // 🎯 精確對齊時間點：7000ms * 44% = 3080ms 撞擊瞬間
+    // 🎯 精確對齊時間點：2300ms 撞擊瞬間
     const CRASH_TRIGGER_TIME = 2300;
 
     setTimeout(() => {

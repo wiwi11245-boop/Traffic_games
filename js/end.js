@@ -141,7 +141,7 @@ function renderEndScene(container, onReturnToTitle) {
 
             /* 回到標題：淡入 */
             @keyframes returnTitleFadeInGpu {
-                0%, 86% { opacity: 0; transform: translate3d(-50%, -50%, 0) scale(0.9); }
+                0%, 89.9% { opacity: 0; transform: translate3d(-50%, -50%, 0) scale(0.9); }
                 90%, 100% { opacity: 1; transform: translate3d(-50%, -50%, 0) scale(1); }
             }
 

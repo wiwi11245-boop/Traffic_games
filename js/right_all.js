@@ -1,4 +1,4 @@
-// 🛠️ 完整動態版 right_all.js：整合 success+event&begin 同步播放、BOMB+crash.mp3(20%)
+// 🛠️ 完整動態版 right_all.js：整合 rAF 渲染同步防搶跑、.webp 支援、音效與撞擊動畫
 
 function renderRightScene(container, onSceneComplete) {
     let hasCorrectInput = false;
@@ -187,51 +187,57 @@ function renderRightScene(container, onSceneComplete) {
     window.addEventListener('gestureDetected', onGestureEvent);
     window.addEventListener('keydown', onKeyDownEvent);
 
-    setTimeout(() => {
-        const countdownImg = document.getElementById('rightCountdownImg');
-        if (countdownImg) {
-            countdownImg.style.display = 'block';
-            countdownImg.src = 'images/321.webp?t=' + Date.now();
-
-            // 🎵 播放 tiktok.mp3 倒數音效 (15% 音量)
-            sfxCountdown.currentTime = 0;
-            sfxCountdown.play().catch(err => console.warn("tiktok 音效播放受阻:", err));
-
+    // 🛠️ 雙重 rAF 確保畫面渲染就緒後再開始計時，徹底防止搶跑
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
             setTimeout(() => {
-                if (countdownImg) countdownImg.style.display = 'none';
-            }, 2800);
-        }
+                const countdownImg = document.getElementById('rightCountdownImg');
+                if (countdownImg) {
+                    countdownImg.style.display = 'block';
+                    countdownImg.src = 'images/321.webp?t=' + Date.now();
 
-        isJudgmentActive = true;
-        console.log("[右轉判定開始] 請在 4 秒內做出右轉手勢！");
+                    // 🎵 播放 tiktok.mp3 倒數音效 (15% 音量)
+                    sfxCountdown.currentTime = 0;
+                    sfxCountdown.play().catch(err => console.warn("tiktok 音效播放受阻:", err));
 
-        setTimeout(() => {
-            isJudgmentActive = false;
-            window.removeEventListener('gestureDetected', onGestureEvent);
-            window.removeEventListener('keydown', onKeyDownEvent);
-            if (countdownImg) countdownImg.style.display = 'none';
+                    setTimeout(() => {
+                        if (countdownImg) countdownImg.style.display = 'none';
+                    }, 2800);
+                }
 
-            if (hasCorrectInput) {
-                console.log("[右轉關卡] 🎉 通關成功！");
-                // 🎵 同步播放 success.mp3 (20%) 與 event&begin.mp3 (5%)
-                sfxSuccess.currentTime = 0;
-                sfxSuccess.play().catch(err => console.warn("success 音效播放受阻:", err));
-                sfxSuccessEvent.currentTime = 0;
-                sfxSuccessEvent.play().catch(err => console.warn("event&begin 音效播放受阻:", err));
+                isJudgmentActive = true;
+                console.log("[右轉判定開始] 請在 4 秒內做出右轉手勢！");
 
-                renderInternalRightSuccess(container);
-                setTimeout(() => { if (typeof onSceneComplete === 'function') onSceneComplete(true); }, 5000);
-            } else {
-                console.log("[右轉關卡] ❌ 辨識失敗！");
-                // 🎵 播放失敗音效
-                sfxLoss.currentTime = 0;
-                sfxLoss.play().catch(err => console.warn("loss 音效播放受阻:", err));
+                setTimeout(() => {
+                    isJudgmentActive = false;
+                    window.removeEventListener('gestureDetected', onGestureEvent);
+                    window.removeEventListener('keydown', onKeyDownEvent);
+                    if (countdownImg) countdownImg.style.display = 'none';
 
-                renderInternalRightFail(container);
-                setTimeout(() => { if (typeof onSceneComplete === 'function') onSceneComplete(false); }, 7000);
-            }
-        }, 4000);
-    }, 500);
+                    if (hasCorrectInput) {
+                        console.log("[右轉關卡] 🎉 通關成功！");
+                        // 🎵 同步播放 success.mp3 (20%) 與 event&begin.mp3 (5%)
+                        sfxSuccess.currentTime = 0;
+                        sfxSuccess.play().catch(err => console.warn("success 音效播放受阻:", err));
+                        sfxSuccessEvent.currentTime = 0;
+                        sfxSuccessEvent.play().catch(err => console.warn("event&begin 音效播放受阻:", err));
+
+                        renderInternalRightSuccess(container);
+                        setTimeout(() => { if (typeof onSceneComplete === 'function') onSceneComplete(true); }, 5000);
+                    } else {
+                        console.log("[右轉關卡] ❌ 辨識失敗！");
+                        // 🎵 播放失敗音效
+                        sfxLoss.currentTime = 0;
+                        sfxLoss.play().catch(err => console.warn("loss 音效播放受阻:", err));
+
+                        renderInternalRightFail(container);
+                        setTimeout(() => { if (typeof onSceneComplete === 'function') onSceneComplete(false); }, 7000);
+                    }
+                }, 4000);
+
+            }, 600); // 留給轉場完全拉開的穩定時間
+        });
+    });
 }
 
 function renderInternalRightSuccess(container) {

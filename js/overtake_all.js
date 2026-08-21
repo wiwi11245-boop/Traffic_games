@@ -1,4 +1,4 @@
-// 🛠️ 完整動態版 overtake_all.js：整合 success+event&begin 同步播放、補回 BOMB 延遲動態載入+crash.mp3(20%)
+// 🛠️ 完整動態版 overtake_all.js：整合 rAF 渲染同步防搶跑、.webp 支援、Trumpet 音效、BOMB+crash.mp3
 
 function renderOvertakeScene(container, onSceneComplete) {
     let hasCorrectInput = false;
@@ -224,54 +224,60 @@ function renderOvertakeScene(container, onSceneComplete) {
     window.addEventListener('gestureDetected', onGestureEvent);
     window.addEventListener('keydown', onKeyDownEvent);
 
-    setTimeout(() => {
-        const countdownImg = document.getElementById('overtakeCountdownImg');
-        if (countdownImg) {
-            countdownImg.style.display = 'block';
-            countdownImg.src = 'images/321.webp?t=' + Date.now();
-
-            // 🎵 播放 tiktok.mp3 倒數音效 (15% 音量)
-            sfxCountdown.currentTime = 0;
-            sfxCountdown.play().catch(err => console.warn("tiktok 音效播放受阻:", err));
-            
-            // 🎵 播放 trumpet.mp3 倒數音效 (30% 音量)
-            sfxTrumpet.currentTime = 0;
-            sfxTrumpet.play().catch(err => console.warn("trumpet 音效播放受阻:", err));
-
+    // 🛠️ 雙重 rAF 確保畫面渲染就緒後再開始計時，徹底防止搶跑
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
             setTimeout(() => {
-                if (countdownImg) countdownImg.style.display = 'none';
-            }, 2800);
-        }
+                const countdownImg = document.getElementById('overtakeCountdownImg');
+                if (countdownImg) {
+                    countdownImg.style.display = 'block';
+                    countdownImg.src = 'images/321.webp?t=' + Date.now();
 
-        isJudgmentActive = true;
+                    // 🎵 播放 tiktok.mp3 倒數音效 (15% 音量)
+                    sfxCountdown.currentTime = 0;
+                    sfxCountdown.play().catch(err => console.warn("tiktok 音效播放受阻:", err));
+                    
+                    // 🎵 播放 trumpet.mp3 倒數音效 (30% 音量)
+                    sfxTrumpet.currentTime = 0;
+                    sfxTrumpet.play().catch(err => console.warn("trumpet 音效播放受阻:", err));
 
-        setTimeout(() => {
-            isJudgmentActive = false;
-            window.removeEventListener('gestureDetected', onGestureEvent);
-            window.removeEventListener('keydown', onKeyDownEvent);
-            if (countdownImg) countdownImg.style.display = 'none';
+                    setTimeout(() => {
+                        if (countdownImg) countdownImg.style.display = 'none';
+                    }, 2800);
+                }
 
-            if (hasCorrectInput) {
-                console.log("[超車關卡] 🎉 通關成功！");
-                // 🎵 同步播放 success.mp3 (20%) 與 event&begin.mp3 (5%)
-                sfxSuccess.currentTime = 0;
-                sfxSuccess.play().catch(err => console.warn("success 音效播放受阻:", err));
-                sfxSuccessEvent.currentTime = 0;
-                sfxSuccessEvent.play().catch(err => console.warn("event&begin 音效播放受阻:", err));
+                isJudgmentActive = true;
 
-                renderInternalOvertakeSuccess(container);
-                setTimeout(() => { if (typeof onSceneComplete === 'function') onSceneComplete(true); }, 7000);
-            } else {
-                console.log("[超車關卡] ❌ 辨識失敗！");
-                // 🎵 播放失敗音效
-                sfxLoss.currentTime = 0;
-                sfxLoss.play().catch(err => console.warn("loss 音效播放受阻:", err));
+                setTimeout(() => {
+                    isJudgmentActive = false;
+                    window.removeEventListener('gestureDetected', onGestureEvent);
+                    window.removeEventListener('keydown', onKeyDownEvent);
+                    if (countdownImg) countdownImg.style.display = 'none';
 
-                renderInternalOvertakeFail(container);
-                setTimeout(() => { if (typeof onSceneComplete === 'function') onSceneComplete(false); }, 7000);
-            }
-        }, 4000);
-    }, 500);
+                    if (hasCorrectInput) {
+                        console.log("[超車關卡] 🎉 通關成功！");
+                        // 🎵 同步播放 success.mp3 (20%) 與 event&begin.mp3 (5%)
+                        sfxSuccess.currentTime = 0;
+                        sfxSuccess.play().catch(err => console.warn("success 音效播放受阻:", err));
+                        sfxSuccessEvent.currentTime = 0;
+                        sfxSuccessEvent.play().catch(err => console.warn("event&begin 音效播放受阻:", err));
+
+                        renderInternalOvertakeSuccess(container);
+                        setTimeout(() => { if (typeof onSceneComplete === 'function') onSceneComplete(true); }, 7000);
+                    } else {
+                        console.log("[超車關卡] ❌ 辨識失敗！");
+                        // 🎵 播放失敗音效
+                        sfxLoss.currentTime = 0;
+                        sfxLoss.play().catch(err => console.warn("loss 音效播放受阻:", err));
+
+                        renderInternalOvertakeFail(container);
+                        setTimeout(() => { if (typeof onSceneComplete === 'function') onSceneComplete(false); }, 7000);
+                    }
+                }, 4000);
+
+            }, 600); // 留給轉場完全拉開的穩定時間
+        });
+    });
 }
 
 function renderInternalOvertakeSuccess(container) {
@@ -299,7 +305,7 @@ function renderInternalOvertakeFail(container) {
     const sfxCrash = new Audio('sound_effect/crash.mp3');
     sfxCrash.volume = 0.20;
 
-    // 🛠️ 補回：在 3150ms（7 秒動畫的 45% 撞擊時刻）動態給予 src 並播放 crash.mp3
+    // 🛠️ 在 3150ms（7 秒動畫的 45% 撞擊時刻）動態給予 src 並播放 crash.mp3
     setTimeout(() => {
         const bombImg = document.getElementById('overtakeFailBomb');
         if (bombImg) {
