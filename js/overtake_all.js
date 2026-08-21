@@ -1,4 +1,4 @@
-// 🛠️ 完整動態版 overtake_all.js：整合 rAF 渲染同步防搶跑、.webp 支援、Trumpet 音效、BOMB+crash.mp3
+// 🛠️ 完整動態版 overtake_all.js：左上角加入「允讓超車.webp」提示、rAF 渲染防搶跑、完整音效
 
 function renderOvertakeScene(container, onSceneComplete) {
     let hasCorrectInput = false;
@@ -34,6 +34,12 @@ function renderOvertakeScene(container, onSceneComplete) {
             @keyframes scrollBgTransform {
                 0% { transform: translateX(0px); }
                 100% { transform: translateX(-1000px); }
+            }
+            /* 🛠️ 左上角手勢字樣提示 */
+            .gesture-hint {
+                position: absolute; top: -175px; left: -50px; width: 300px; height: auto;
+                z-index: 9; pointer-events: none;
+                filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.4));
             }
             .overtake-sun {
                 position: absolute; top: -62px; left: 98px; width: 172px; height: auto;
@@ -153,7 +159,7 @@ function renderOvertakeScene(container, onSceneComplete) {
                 transform: translateX(1100px) scaleX(-1); z-index: 4; will-change: transform;
                 animation: oppositeCarCrashTransform 7s linear forwards;
             }
-            /* 🛠️ BOMB 預設透明，等 3150ms 注入 active-play 播放 */
+            /* 🛠️ BOMB 預設透明，等 3150ms 注入 active-play 播放[cite: 24] */
             .overtake-fail-bomb {
                 position: absolute; width: 180px; height: 180px; left: 370px; bottom: 65px;
                 z-index: 6; pointer-events: none; opacity: 0;
@@ -205,6 +211,8 @@ function renderOvertakeScene(container, onSceneComplete) {
 
     container.innerHTML = `
         <div class="scene-overtake-bg"></div>
+        <!-- 🛠️ 左上角手勢字樣提示 -->
+        <img src="images/允讓超車.webp" class="gesture-hint" alt="允讓超車手勢提示">
         <img src="images/sun.webp" class="overtake-sun" alt="太陽">
         <img src="images/ANGRY_CAR.webp" class="angry-car" alt="怒氣後車">
         <img src="images/CAR.webp" class="overtake-player-car" alt="紅車主角">
@@ -224,7 +232,7 @@ function renderOvertakeScene(container, onSceneComplete) {
     window.addEventListener('gestureDetected', onGestureEvent);
     window.addEventListener('keydown', onKeyDownEvent);
 
-    // 🛠️ 雙重 rAF 確保畫面渲染就緒後再開始計時，徹底防止搶跑
+    // 🛠️ 雙重 rAF 確保畫面渲染就緒後再開始計時，徹底防止搶跑[cite: 20]
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             setTimeout(() => {
@@ -233,11 +241,11 @@ function renderOvertakeScene(container, onSceneComplete) {
                     countdownImg.style.display = 'block';
                     countdownImg.src = 'images/321.webp?t=' + Date.now();
 
-                    // 🎵 播放 tiktok.mp3 倒數音效 (15% 音量)
+                    // 🎵 播放 tiktok.mp3 倒數音效 (15% 音量)[cite: 24]
                     sfxCountdown.currentTime = 0;
                     sfxCountdown.play().catch(err => console.warn("tiktok 音效播放受阻:", err));
                     
-                    // 🎵 播放 trumpet.mp3 倒數音效 (30% 音量)
+                    // 🎵 播放 trumpet.mp3 倒數音效 (30% 音量)[cite: 24]
                     sfxTrumpet.currentTime = 0;
                     sfxTrumpet.play().catch(err => console.warn("trumpet 音效播放受阻:", err));
 
@@ -256,7 +264,7 @@ function renderOvertakeScene(container, onSceneComplete) {
 
                     if (hasCorrectInput) {
                         console.log("[超車關卡] 🎉 通關成功！");
-                        // 🎵 同步播放 success.mp3 (20%) 與 event&begin.mp3 (5%)
+                        // 🎵 同步播放 success.mp3 (20%) 與 event&begin.mp3 (5%)[cite: 24]
                         sfxSuccess.currentTime = 0;
                         sfxSuccess.play().catch(err => console.warn("success 音效播放受阻:", err));
                         sfxSuccessEvent.currentTime = 0;
@@ -266,7 +274,7 @@ function renderOvertakeScene(container, onSceneComplete) {
                         setTimeout(() => { if (typeof onSceneComplete === 'function') onSceneComplete(true); }, 7000);
                     } else {
                         console.log("[超車關卡] ❌ 辨識失敗！");
-                        // 🎵 播放失敗音效
+                        // 🎵 播放失敗音效[cite: 24]
                         sfxLoss.currentTime = 0;
                         sfxLoss.play().catch(err => console.warn("loss 音效播放受阻:", err));
 
@@ -275,7 +283,7 @@ function renderOvertakeScene(container, onSceneComplete) {
                     }
                 }, 4000);
 
-            }, 600); // 留給轉場完全拉開的穩定時間
+            }, 600); // 留給轉場完全拉開的穩定時間[cite: 20]
         });
     });
 }
@@ -283,6 +291,7 @@ function renderOvertakeScene(container, onSceneComplete) {
 function renderInternalOvertakeSuccess(container) {
     container.innerHTML = `
         <div class="scene-overtake-success-bg"></div>
+        <img src="images/允讓超車.webp" class="gesture-hint" alt="允讓超車手勢提示">
         <img src="images/sun.webp" class="overtake-sun" alt="太陽">
         <img src="images/ANGRY_CAR.webp" class="overtake-success-angry-car" alt="怒氣後車">
         <img src="images/CAR.webp" class="overtake-success-player-car" alt="紅車主角">
@@ -293,6 +302,7 @@ function renderInternalOvertakeSuccess(container) {
 function renderInternalOvertakeFail(container) {
     container.innerHTML = `
         <div class="scene-overtake-fail-bg"></div>
+        <img src="images/允讓超車.webp" class="gesture-hint" alt="允讓超車手勢提示">
         <img src="images/sun.webp" class="overtake-sun" alt="太陽">
         <img src="images/ANGRY_CAR.webp" class="overtake-fail-angry-car" alt="怒氣後車">
         <img src="images/CAR.webp" class="overtake-fail-player-car" alt="紅車主角">
@@ -301,20 +311,20 @@ function renderInternalOvertakeFail(container) {
         <img src="images/遊戲失敗.webp" class="overtake-fail-banner" alt="遊戲失敗標題">
     `;
 
-    // 🎵 宣告爆炸音效 (20% 音量)
+    // 🎵 宣告爆炸音效 (20% 音量)[cite: 24]
     const sfxCrash = new Audio('sound_effect/crash.mp3');
     sfxCrash.volume = 0.20;
 
-    // 🛠️ 在 3150ms（7 秒動畫的 45% 撞擊時刻）動態給予 src 並播放 crash.mp3
+    // 🛠️ 在 3150ms（7 秒動畫的 45% 撞擊時刻）動態給予 src 並播放 crash.mp3[cite: 24]
     setTimeout(() => {
         const bombImg = document.getElementById('overtakeFailBomb');
         if (bombImg) {
             bombImg.src = 'images/BOMB.webp?t=' + Date.now();
             bombImg.classList.add('active-play');
 
-            // 🎵 BOMB.webp 出現時同步播放 crash.mp3
+            // 🎵 BOMB.webp 出現時同步播放 crash.mp3[cite: 24]
             sfxCrash.currentTime = 0;
             sfxCrash.play().catch(err => console.warn("crash 音效播放受阻:", err));
         }
-    }, 3150); // 3150ms = 7000ms * 45%
+    }, 3150); // 3150ms = 7000ms * 45%[cite: 24]
 }

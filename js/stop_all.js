@@ -1,4 +1,4 @@
-// 🛠️ 完整動態整合版 stop_all.js：整合 rAF 渲染同步防搶跑、.webp 支援、2300ms 撞擊、3400ms 緩停音效
+// 🛠️ 完整動態整合版 stop_all.js：左上角加入「緩停.webp」提示、rAF 渲染防搶跑、完整音效
 
 function renderStopScene(container, onSceneComplete) {
     let hasCorrectInput = false;
@@ -25,6 +25,12 @@ function renderStopScene(container, onSceneComplete) {
                 position: absolute; top: 0; left: 0; width: 1000px; height: 400px;
                 background-image: url('images/停止場景.webp');
                 background-size: 100% 100%; background-repeat: no-repeat; z-index: 1;
+            }
+            /* 🛠️ 左上角手勢字樣提示 */
+            .gesture-hint {
+                position: absolute; top: -180px; left: -80px; width: 300px; height: auto;
+                z-index: 9; pointer-events: none;
+                filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.4));
             }
             .stop-sun {
                 position: absolute; top: -62px; left: 98px; width: 172px; height: auto;
@@ -180,6 +186,8 @@ function renderStopScene(container, onSceneComplete) {
 
     container.innerHTML = `
         <div class="scene-stop-bg"></div>
+        <!-- 🛠️ 左上角手勢字樣提示 -->
+        <img src="images/緩停.webp" class="gesture-hint" alt="緩停手勢提示">
         <img src="images/sun.webp" class="stop-sun" alt="太陽">
         <img src="images/CAR.webp" class="stop-player-car" alt="紅車主角">
         <img src="images/CAR2.webp" class="stop-blue-car" alt="藍車後車">
@@ -206,7 +214,7 @@ function renderStopScene(container, onSceneComplete) {
     window.addEventListener('gestureDetected', onGestureEvent);
     window.addEventListener('keydown', onKeyDownEvent);
 
-    // 🛠️ 雙重 rAF 確保畫面渲染就緒後再開始計時，徹底防止搶跑
+    // 🛠️ 雙重 rAF 確保畫面渲染就緒後再開始計時，徹底防止搶跑[cite: 20]
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             setTimeout(() => {
@@ -215,7 +223,7 @@ function renderStopScene(container, onSceneComplete) {
                     countdownImg.style.display = 'block';
                     countdownImg.src = 'images/321.webp?t=' + Date.now();
 
-                    // 🎵 播放 tiktok.mp3 倒數音效 (15% 音量)
+                    // 🎵 播放 tiktok.mp3 倒數音效 (15% 音量)[cite: 22]
                     sfxCountdown.currentTime = 0;
                     sfxCountdown.play().catch(err => console.warn("tiktok 音效播放受阻:", err));
 
@@ -235,11 +243,11 @@ function renderStopScene(container, onSceneComplete) {
                     if (hasCorrectInput) {
                         console.log("[緩停關卡] 🎉 通關成功！");
                         
-                        // 🎵 1. 即刻播放通關音效 success.mp3 (20%)
+                        // 🎵 1. 即刻播放通關音效 success.mp3 (20%)[cite: 22]
                         sfxSuccess.currentTime = 0;
                         sfxSuccess.play().catch(err => console.warn("success 音效播放受阻:", err));
 
-                        // 🎵 2. 等待緩停結束起步後播放 event&begin.mp3 (3400ms)
+                        // 🎵 2. 等待緩停結束起步後播放 event&begin.mp3 (3400ms)[cite: 22]
                         setTimeout(() => {
                             sfxSuccessEvent.currentTime = 0;
                             sfxSuccessEvent.play().catch(err => console.warn("event&begin 音效播放受阻:", err));
@@ -249,7 +257,7 @@ function renderStopScene(container, onSceneComplete) {
                         setTimeout(() => { if (typeof onSceneComplete === 'function') onSceneComplete(true); }, 6000);
                     } else {
                         console.log("[緩停關卡] ❌ 辨識失敗！");
-                        // 🎵 播放失敗音效
+                        // 🎵 播放失敗音效[cite: 22]
                         sfxLoss.currentTime = 0;
                         sfxLoss.play().catch(err => console.warn("loss 音效播放受阻:", err));
 
@@ -258,7 +266,7 @@ function renderStopScene(container, onSceneComplete) {
                     }
                 }, 4000);
 
-            }, 600); // 留給轉場完全拉開的穩定時間
+            }, 600); // 留給轉場完全拉開的穩定時間[cite: 20]
         });
     });
 }
@@ -266,6 +274,7 @@ function renderStopScene(container, onSceneComplete) {
 function renderInternalStopSuccess(container) {
     container.innerHTML = `
         <div class="scene-stop-bg"></div>
+        <img src="images/緩停.webp" class="gesture-hint" alt="緩停手勢提示">
         <img src="images/sun.webp" class="stop-sun" alt="太陽">
         <img src="images/CAR.webp" class="stop-success-player-car" alt="紅車主角">
         <img src="images/CAR2.webp" class="stop-success-blue-car" alt="藍車後車">
@@ -283,6 +292,7 @@ function renderInternalStopSuccess(container) {
 function renderInternalStopFail(container) {
     container.innerHTML = `
         <div class="scene-stop-bg"></div>
+        <img src="images/緩停.webp" class="gesture-hint" alt="緩停手勢提示">
         <img src="images/sun.webp" class="stop-sun" alt="太陽">
         <img src="images/CAR.webp" class="stop-fail-player-car" alt="紅車主角">
         <img src="images/CAR2.webp" class="stop-fail-blue-car" alt="藍車後車">
@@ -297,11 +307,11 @@ function renderInternalStopFail(container) {
         <img src="images/遊戲失敗.webp" class="stop-fail-banner" alt="遊戲失敗標題">
     `;
 
-    // 🎵 宣告爆炸音效 (20% 音量)
+    // 🎵 宣告爆炸音效 (20% 音量)[cite: 22]
     const sfxCrash = new Audio('sound_effect/crash.mp3');
     sfxCrash.volume = 0.20;
 
-    // 🎯 精確對齊時間點：2300ms 撞擊瞬間
+    // 🎯 精確對齊時間點：2300ms 撞擊瞬間[cite: 22]
     const CRASH_TRIGGER_TIME = 2300;
 
     setTimeout(() => {
@@ -310,7 +320,7 @@ function renderInternalStopFail(container) {
             bombImg.src = 'images/BOMB.webp?t=' + Date.now();
             bombImg.classList.add('active-play');
 
-            // 🎵 BOMB.webp 出現時同步從頭 (0秒) 播放 crash.mp3
+            // 🎵 BOMB.webp 出現時同步從頭 (0秒) 播放 crash.mp3[cite: 22]
             sfxCrash.currentTime = 0;
             sfxCrash.play().catch(err => console.warn("crash 音效播放受阻:", err));
         }

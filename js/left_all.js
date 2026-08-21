@@ -1,4 +1,4 @@
-// 🛠️ 完整動態版 left_all.js：整合 rAF 渲染同步防搶跑、.webp 支援、音效與撞擊動畫
+// 🛠️ 完整動態版 left_all.js：左上角加入「左轉.webp」提示、rAF 渲染防搶跑、完整音效
 
 function renderLeftScene(container, onSceneComplete) {
     let hasCorrectInput = false;
@@ -25,6 +25,12 @@ function renderLeftScene(container, onSceneComplete) {
                 position: absolute; top: 0; left: 0; width: 1000px; height: 400px;
                 background-image: url('images/左轉場景.webp');
                 background-size: 100% 100%; background-repeat: no-repeat; z-index: 1;
+            }
+            /* 🛠️ 左上角手勢字樣提示 */
+            .gesture-hint {
+                position: absolute; top: -165px; left: -55px; width: 300px; height: auto;
+                z-index: 9; pointer-events: none;
+                filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.4));
             }
             .left-sun { position: absolute; top: -62px; left: 98px; width: 172px; height: auto; z-index: 2; pointer-events: none; }
             .left-flower { position: absolute; width: 130px; height: auto; z-index: 2; pointer-events: none; }
@@ -165,6 +171,8 @@ function renderLeftScene(container, onSceneComplete) {
 
     container.innerHTML = `
         <div class="scene-left-bg"></div>
+        <!-- 🛠️ 左上角手勢字樣提示 -->
+        <img src="images/左轉.webp" class="gesture-hint" alt="左轉手勢提示">
         <img src="images/sun.webp" class="left-sun" alt="太陽">
         <img src="images/FLOWER.webp" class="left-flower" style="left: 30px; bottom: -50px;" alt="花朵">
         <img src="images/FLOWER.webp" class="left-flower" style="left: 380px; bottom: -50px;" alt="花朵">
@@ -195,7 +203,7 @@ function renderLeftScene(container, onSceneComplete) {
                     countdownImg.style.display = 'block';
                     countdownImg.src = 'images/321.webp?t=' + Date.now();
 
-                    // 🎵 播放 tiktok.mp3 倒數音效 (15% 音量)
+                    // 🎵 播放 tiktok.mp3 倒數音效 (15% 音量)[cite: 23]
                     sfxCountdown.currentTime = 0;
                     sfxCountdown.play().catch(err => console.warn("tiktok 音效播放受阻:", err));
 
@@ -214,7 +222,7 @@ function renderLeftScene(container, onSceneComplete) {
 
                     if (hasCorrectInput) {
                         console.log("[左轉關卡] 🎉 通關成功！");
-                        // 🎵 同步播放 success.mp3 (20%) 與 event&begin.mp3 (5%)
+                        // 🎵 同步播放 success.mp3 (20%) 與 event&begin.mp3 (5%)[cite: 23]
                         sfxSuccess.currentTime = 0;
                         sfxSuccess.play().catch(err => console.warn("success 音效播放受阻:", err));
                         sfxSuccessEvent.currentTime = 0;
@@ -224,7 +232,7 @@ function renderLeftScene(container, onSceneComplete) {
                         setTimeout(() => { if (typeof onSceneComplete === 'function') onSceneComplete(true); }, 5000);
                     } else {
                         console.log("[左轉關卡] ❌ 辨識失敗！");
-                        // 🎵 播放失敗音效
+                        // 🎵 播放失敗音效[cite: 23]
                         sfxLoss.currentTime = 0;
                         sfxLoss.play().catch(err => console.warn("loss 音效播放受阻:", err));
 
@@ -241,6 +249,7 @@ function renderLeftScene(container, onSceneComplete) {
 function renderInternalLeftSuccess(container) {
     container.innerHTML = `
         <div class="scene-left-bg"></div>
+        <img src="images/左轉.webp" class="gesture-hint" alt="左轉手勢提示">
         <img src="images/sun.webp" class="left-sun" alt="太陽">
         <img src="images/FLOWER.webp" class="left-flower" style="left: 30px; bottom: -50px;" alt="花朵">
         <img src="images/FLOWER.webp" class="left-flower" style="left: 380px; bottom: -50px;" alt="花朵">
@@ -254,6 +263,7 @@ function renderInternalLeftSuccess(container) {
 function renderInternalLeftFail(container) {
     container.innerHTML = `
         <div class="scene-left-bg"></div>
+        <img src="images/左轉.webp" class="gesture-hint" alt="左轉手勢提示">
         <img src="images/sun.webp" class="left-sun" alt="太陽">
         <img id="leftFailBomb" class="left-fail-bomb" alt="爆炸">
         <img src="images/CAR.webp" class="left-fail-player-car" alt="紅車">
@@ -261,7 +271,7 @@ function renderInternalLeftFail(container) {
         <img src="images/遊戲失敗.webp" class="left-fail-banner" alt="失敗">
     `;
 
-    // 🎵 宣告爆炸音效 (20% 音量)
+    // 🎵 宣告爆炸音效 (20% 音量)[cite: 23]
     const sfxCrash = new Audio('sound_effect/crash.mp3');
     sfxCrash.volume = 0.20;
 
@@ -271,7 +281,7 @@ function renderInternalLeftFail(container) {
             bombImg.src = 'images/BOMB.webp?t=' + Date.now();
             bombImg.classList.add('active-play');
 
-            // 🎵 BOMB.webp 出現時同步播放 crash.mp3
+            // 🎵 BOMB.webp 出現時同步播放 crash.mp3[cite: 23]
             sfxCrash.currentTime = 0;
             sfxCrash.play().catch(err => console.warn("crash 音效播放受阻:", err));
         }
