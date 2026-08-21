@@ -1,4 +1,4 @@
-// 🛠️ 修正版 end.js：修復 CSS url 單引號語法錯誤，支援 webp 與完整音效時序
+// 🛠️ 完整動態版 end.js：支援鍵盤 Enter 與手機/滑鼠點擊螢幕返回標題、完整音效時序
 
 function renderEndScene(container, onReturnToTitle) {
     let canReturnToTitle = false;
@@ -9,7 +9,7 @@ function renderEndScene(container, onReturnToTitle) {
     audioEnd.volume = 0.1; // 10% 音量
 
     const audioEndingTheme = new Audio('sound_effect/結局音樂.mp3');
-    audioEndingTheme.loop = true; // 循環播放直到按下 Enter
+    audioEndingTheme.loop = true; // 循環播放直到按下 Enter 或點擊
     audioEndingTheme.volume = 0.05; // 5% 音量
 
     // 1. 場景開啟，立即播放 end.mp3
@@ -22,7 +22,7 @@ function renderEndScene(container, onReturnToTitle) {
         style.textContent = `
             .scene-end-viewport {
                 position: absolute; top: 0; left: 0; width: 1000px; height: 400px;
-                background-image: url('images/修車廠.webp'); /* 🛠️ 已補回結尾單引號 */
+                background-image: url('images/修車廠.webp');
                 background-size: 100% 100%; background-repeat: no-repeat; z-index: 1;
                 transform: translate3d(0, 0, 0); /* 開啟 GPU 合成圖層 */
             }
@@ -145,9 +145,11 @@ function renderEndScene(container, onReturnToTitle) {
                 90%, 100% { opacity: 1; transform: translate3d(-50%, -50%, 0) scale(1); }
             }
 
-            /* 呼吸燈一閃一閃特效 */
+            /* 呼吸燈一閃一閃特效 (啟用點擊提示與指標) */
             .return-title-banner.active-pulse {
                 opacity: 1 !important;
+                pointer-events: auto !important;
+                cursor: pointer !important;
                 animation: pulseBlinkTitleGpu 2s ease-in-out infinite !important;
             }
             @keyframes pulseBlinkTitleGpu {
@@ -169,7 +171,7 @@ function renderEndScene(container, onReturnToTitle) {
             <div class="dark-overlay"></div>
             <div class="foreground-mountain"></div>
             <img src="images/感謝遊玩.webp" class="thanks-banner" alt="感謝遊玩標題">
-            <img src="images/回到標題.webp" id="returnTitleImg" class="return-title-banner" alt="按ENTER鍵回到標題">
+            <img src="images/回到標題.webp" id="returnTitleImg" class="return-title-banner" alt="按ENTER鍵或點擊回到標題">
         </div>
     `;
 
@@ -180,7 +182,7 @@ function renderEndScene(container, onReturnToTitle) {
         audioEndingTheme.play().catch(err => console.warn("結局音樂 播放受阻:", err));
     }, 8400); // 12000ms * 70% = 8400ms
 
-    // 雙重 requestAnimationFrame 防重排，於 10.5 秒後啟用呼吸燈與 Enter 返回功能
+    // 雙重 requestAnimationFrame 防重排，於 10.5 秒後啟用呼吸燈與返回功能
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             setTimeout(() => {
@@ -189,25 +191,42 @@ function renderEndScene(container, onReturnToTitle) {
                 if (returnImg) {
                     returnImg.classList.add('active-pulse');
                 }
-                console.log("[End 結局] 按 Enter 鍵即可重回遊戲標題畫面！");
+                console.log("[End 結局] 按 Enter 鍵或點擊螢幕即可重回遊戲標題畫面！");
             }, 10500);
         });
     });
 
-    // 3. 按下 Enter 鍵回到標題並停止結局音樂
-    function handleReturnEnter(e) {
-        if (canReturnToTitle && (e.key === 'Enter' || e.keyCode === 13)) {
-            window.removeEventListener('keydown', handleReturnEnter);
+    // 🛠️ 通用返回標題函式 (鍵盤 Enter / 滑鼠點擊 / 手機觸控共用)
+    function triggerReturnToTitle() {
+        if (!canReturnToTitle) return;
 
-            // 停止結局音樂
-            audioEndingTheme.pause();
-            audioEndingTheme.currentTime = 0;
+        // 移除所有相關監聽器避免重複觸發
+        window.removeEventListener('keydown', handleReturnEnter);
+        container.removeEventListener('click', handleScreenClick);
+        container.removeEventListener('touchstart', handleScreenClick);
 
-            if (typeof onReturnToTitle === 'function') {
-                onReturnToTitle();
-            }
+        // 停止結局音樂
+        audioEndingTheme.pause();
+        audioEndingTheme.currentTime = 0;
+
+        if (typeof onReturnToTitle === 'function') {
+            onReturnToTitle();
         }
     }
 
+    // 1. 鍵盤 Enter 監聽
+    function handleReturnEnter(e) {
+        if (e.key === 'Enter' || e.keyCode === 13) {
+            triggerReturnToTitle();
+        }
+    }
+
+    // 2. 手機觸控 / 滑鼠點擊監聽
+    function handleScreenClick() {
+        triggerReturnToTitle();
+    }
+
     window.addEventListener('keydown', handleReturnEnter);
+    container.addEventListener('click', handleScreenClick);
+    container.addEventListener('touchstart', handleScreenClick);
 }
